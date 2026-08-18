@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>拉拉熊的回家計畫</title>
+    <title>進出貨與庫存管理系統</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -76,7 +76,7 @@
             <div class="flex items-center space-x-3">
                 <i data-lucide="box" class="w-8 h-8"></i>
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight">拉拉熊的回家計畫</h1>
+                    <h1 class="text-2xl font-bold tracking-tight">進出貨與庫存管理系統</h1>
                     <div class="flex items-center space-x-2 text-xs text-indigo-200 mt-0.5">
                         <span id="cloudStatusBadge" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
                             離線模式 (本機儲存)
@@ -102,6 +102,10 @@
                 <button onclick="switchTab('inventory')" id="tabBtn-inventory" class="py-3 px-4 font-semibold text-sm border-b-2 border-white text-white flex items-center space-x-2 whitespace-nowrap transition">
                     <i data-lucide="list" class="w-4 h-4"></i>
                     <span>進出貨管制</span>
+                </button>
+                <button onclick="switchTab('stock')" id="tabBtn-stock" class="py-3 px-4 font-semibold text-sm border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center space-x-2 whitespace-nowrap transition">
+                    <i data-lucide="boxes" class="w-4 h-4"></i>
+                    <span>庫存與物流</span>
                 </button>
                 <button onclick="switchTab('cost')" id="tabBtn-cost" class="py-3 px-4 font-semibold text-sm border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center space-x-2 whitespace-nowrap transition">
                     <i data-lucide="dollar-sign" class="w-4 h-4"></i>
@@ -136,7 +140,7 @@
             </div>
         </div>
 
-        <!-- 通用新增表單區域 (按鈕點開) -->
+        <!-- 通用新增表單區域 (訂單紀錄) -->
         <div id="formContainer" class="hidden bg-white rounded-xl shadow-md border border-indigo-100 p-6 transition-all">
             <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
                 <h2 id="formTitle" class="text-lg font-bold text-slate-900">新增訂單紀錄</h2>
@@ -155,8 +159,8 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">人名 / 客戶 * <span class="text-indigo-600 font-normal">(多人可用逗號、頓號隔開)</span></label>
-                    <textarea id="personInput" rows="1" required placeholder="例如：張三, 李四, 王五" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">人名 / 客戶 * <span class="text-indigo-600 font-normal">(多人可用逗號隔開)</span></label>
+                    <textarea id="personInput" rows="1" required placeholder="例如：張三, 李四" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                 </div>
 
                 <div>
@@ -185,26 +189,26 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">到貨狀態</label>
-                    <select id="arrivedSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="false">未到貨</option>
-                        <option value="true">已到貨</option>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">是否訂購</label>
+                    <select id="orderedSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="false">未訂購</option>
+                        <option value="true">已訂購</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">寄出狀態</label>
-                    <select id="shippedSelect" onchange="calculatePending()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="false">未寄出</option>
-                        <option value="true">已寄出 (尾款自動歸零)</option>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">商品目前位置</label>
+                    <select id="locationSelect" onchange="handleLocationChange()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="代買中">代買中</option>
+                        <option value="郵寄中">郵寄中</option>
+                        <option value="已到貨">已到貨 (在庫存庫)</option>
+                        <option value="已寄出">已寄出 (交付顧客)</option>
                     </select>
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">商品圖片 (選擇圖片檔或貼上網址)</label>
-                    <div class="flex items-center space-x-3">
-                        <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)" class="text-xs text-slate-500 w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                    </div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">商品圖片</label>
+                    <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)" class="text-xs text-slate-500 w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                     <div id="imagePreviewBox" class="mt-2 hidden flex items-center space-x-2">
                         <img id="imagePreview" src="" class="w-12 h-12 object-cover rounded border border-slate-200">
                         <button type="button" onclick="removeImage()" class="text-xs text-rose-500 hover:underline">刪除圖片</button>
@@ -259,17 +263,18 @@
                 <div class="flex flex-col sm:flex-row w-full md:w-auto gap-3">
                     <input type="text" id="searchInput" oninput="renderTable()" placeholder="搜尋姓名、商品或備註..." class="px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 w-full sm:w-64">
                     <select id="statusFilter" onchange="renderTable()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 text-slate-700 w-full sm:w-auto">
-                        <option value="all">全部狀態</option>
-                        <option value="arrived">已到貨</option>
-                        <option value="not_arrived">未到貨</option>
-                        <option value="shipped">已寄出</option>
-                        <option value="not_shipped">未寄出</option>
-                        <option value="unpaid">尚有尾款未收</option>
+                        <option value="all">全部訂購狀態</option>
+                        <option value="ordered">已訂購</option>
+                        <option value="not_ordered">未訂購</option>
+                        <option value="location_buying">代買中</option>
+                        <option value="location_shipping">郵寄中</option>
+                        <option value="location_arrived">已到貨</option>
+                        <option value="location_shipped">已寄出</option>
                     </select>
                 </div>
             </div>
 
-            <!-- 表格 (不含成本，供對外/顧客檢視) -->
+            <!-- 表格 -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse rwd-table">
@@ -282,8 +287,8 @@
                                 <th class="py-3 px-4 text-right">售價</th>
                                 <th class="py-3 px-4 text-right">已收金額</th>
                                 <th class="py-3 px-4 text-right">未收尾款</th>
-                                <th class="py-3 px-4 text-center">到貨狀態</th>
-                                <th class="py-3 px-4 text-center">寄出狀態</th>
+                                <th class="py-3 px-4 text-center">訂購狀態</th>
+                                <th class="py-3 px-4 text-center">商品位置</th>
                                 <th class="py-3 px-4">備註</th>
                                 <th class="py-3 px-4 text-center">操作</th>
                             </tr>
@@ -295,7 +300,76 @@
         </div>
 
 
-        <!-- ================= PAGE 2: 成本與利潤 ================= -->
+        <!-- ================= PAGE 2: 庫存與物流管控 ================= -->
+        <div id="page-stock" class="hidden space-y-6">
+            <!-- 頂部新增庫存品項表單 -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-800 mb-3 flex items-center space-x-2">
+                    <i data-lucide="package-plus" class="w-5 h-5 text-indigo-600"></i>
+                    <span>新增獨立庫存商品</span>
+                </h3>
+                <form id="stockForm" onsubmit="saveStockItem(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <input type="text" id="stockNameInput" placeholder="商品名稱 *" required class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                    <input type="number" id="stockQtyInput" placeholder="初始庫存數量 *" min="0" required class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="stockPosInput" placeholder="存放位置 (如: A櫃3層)" class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition">新增品項</button>
+                </form>
+            </div>
+
+            <!-- 庫存表格 -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800 flex items-center space-x-2">
+                        <i data-lucide="boxes" class="w-5 h-5 text-indigo-600"></i>
+                        <span>現有庫存品項與狀態 (含低庫存進貨提醒)</span>
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse rwd-table">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                <th class="py-3 px-4">商品名稱</th>
+                                <th class="py-3 px-4 text-center">目前庫存數量</th>
+                                <th class="py-3 px-4 text-center">進貨狀態提醒</th>
+                                <th class="py-3 px-4">存放位置</th>
+                                <th class="py-3 px-4 text-center">快速調整數量</th>
+                                <th class="py-3 px-4 text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody" class="divide-y divide-slate-200 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 物流狀態統計看板 -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <h3 class="font-bold text-slate-800 mb-4 flex items-center space-x-2">
+                    <i data-lucide="truck" class="w-5 h-5 text-indigo-600"></i>
+                    <span>客戶訂單物流位置總覽</span>
+                </h3>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                    <div class="p-4 bg-purple-50 rounded-xl border border-purple-100">
+                        <p class="text-xs text-purple-600 font-semibold uppercase">代買中</p>
+                        <p id="countBuying" class="text-2xl font-bold text-purple-800 mt-1">0 件</p>
+                    </div>
+                    <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                        <p class="text-xs text-blue-600 font-semibold uppercase">郵寄中</p>
+                        <p id="countShipping" class="text-2xl font-bold text-blue-800 mt-1">0 件</p>
+                    </div>
+                    <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                        <p class="text-xs text-emerald-600 font-semibold uppercase">已到貨 (在庫存)</p>
+                        <p id="countArrived" class="text-2xl font-bold text-emerald-800 mt-1">0 件</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <p class="text-xs text-slate-500 font-semibold uppercase">已寄出 (交貨)</p>
+                        <p id="countShipped" class="text-2xl font-bold text-slate-700 mt-1">0 件</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE 3: 成本與利潤 ================= -->
         <div id="page-cost" class="hidden space-y-6">
             <!-- 成本與利潤指標卡片 -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -331,7 +405,7 @@
                                 <th class="py-3 px-4 text-right">售價</th>
                                 <th class="py-3 px-4 text-right text-slate-600">成本</th>
                                 <th class="py-3 px-4 text-right text-emerald-600">利潤 (單筆)</th>
-                                <th class="py-3 px-4 text-center">寄出狀態</th>
+                                <th class="py-3 px-4 text-center">商品位置</th>
                                 <th class="py-3 px-4">備註</th>
                             </tr>
                         </thead>
@@ -342,9 +416,8 @@
         </div>
 
 
-        <!-- ================= PAGE 3: 年月盈虧統計 ================= -->
+        <!-- ================= PAGE 4: 年月盈虧統計 ================= -->
         <div id="page-analytics" class="hidden space-y-6">
-            <!-- 篩選列 -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-wrap gap-4 justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <i data-lucide="filter" class="w-5 h-5 text-indigo-600"></i>
@@ -352,9 +425,7 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
                     <label class="text-xs font-semibold text-slate-600">年份：</label>
-                    <select id="analyticsYearSelect" onchange="updateAnalytics()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 text-slate-700">
-                        <!-- JS 自動產生年份選單 -->
-                    </select>
+                    <select id="analyticsYearSelect" onchange="updateAnalytics()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 text-slate-700"></select>
 
                     <label class="text-xs font-semibold text-slate-600 ml-2">顯示方式：</label>
                     <select id="analyticsViewType" onchange="updateAnalytics()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 text-slate-700">
@@ -364,9 +435,8 @@
                 </div>
             </div>
 
-            <!-- 圖表卡片 -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <h3 id="chartTitle" class="text-lg font-bold text-slate-800 mb-4">月度盈虧趨勢圖 (長條圖)</h3>
+                <h3 id="chartTitle" class="text-lg font-bold text-slate-800 mb-4">月度盈虧趨勢圖</h3>
                 <div class="relative w-full" style="height: 380px;">
                     <canvas id="profitChart"></canvas>
                 </div>
@@ -377,6 +447,7 @@
 
     <script>
         let records = JSON.parse(localStorage.getItem('inventory_records')) || [];
+        let stockItems = JSON.parse(localStorage.getItem('stock_items')) || [];
         let apiUrl = localStorage.getItem('cloud_api_url') || '';
         let myChart = null;
 
@@ -394,9 +465,8 @@
             lucide.createIcons();
         });
 
-        // 頁面切換邏輯
         function switchTab(tabName) {
-            ['inventory', 'cost', 'analytics'].forEach(t => {
+            ['inventory', 'stock', 'cost', 'analytics'].forEach(t => {
                 const page = document.getElementById(`page-${t}`);
                 const btn = document.getElementById(`tabBtn-${t}`);
                 if (t === tabName) {
@@ -408,13 +478,12 @@
                 }
             });
 
-            if (tabName === 'analytics') {
-                updateAnalytics();
-            }
+            if (tabName === 'analytics') updateAnalytics();
         }
 
         function renderAllPages() {
             renderTable();
+            renderStockPage();
             renderCostPage();
             updateAnalytics();
         }
@@ -506,14 +575,18 @@
             }
         }
 
+        function handleLocationChange() {
+            calculatePending();
+        }
+
         function calculatePending() {
             const price = parseFloat(document.getElementById('priceInput').value) || 0;
             const received = parseFloat(document.getElementById('receivedInput').value) || 0;
-            const isShipped = document.getElementById('shippedSelect').value === 'true';
+            const location = document.getElementById('locationSelect').value;
             
             const pendingInput = document.getElementById('pendingInput');
-            if (isShipped) {
-                pendingInput.value = "$0 (已付清)";
+            if (location === '已寄出') {
+                pendingInput.value = "$0 (已結清)";
                 pendingInput.className = "w-full px-3 py-2 bg-emerald-50 border border-emerald-300 rounded-lg text-sm text-emerald-700 font-bold cursor-not-allowed";
             } else {
                 const pending = Math.max(0, price - received);
@@ -588,13 +661,14 @@
             const price = parseFloat(document.getElementById('priceInput').value) || 0;
             const cost = parseFloat(document.getElementById('costInput').value) || 0;
             const received = parseFloat(document.getElementById('receivedInput').value) || 0;
-            const arrived = document.getElementById('arrivedSelect').value === 'true';
-            const shipped = document.getElementById('shippedSelect').value === 'true';
+            const ordered = document.getElementById('orderedSelect').value === 'true';
+            const location = document.getElementById('locationSelect').value;
+            const shipped = (location === '已寄出');
             const image = document.getElementById('imageBase64').value || '';
             const notes = document.getElementById('notesInput').value.trim();
 
             if (recordId) {
-                const recordData = { id: recordId, date, person: rawPerson, product, price, cost, received, arrived, shipped, image, notes };
+                const recordData = { id: recordId, date, person: rawPerson, product, price, cost, received, ordered, location, shipped, image, notes };
                 const existingIndex = records.findIndex(r => r.id === recordId);
                 if (existingIndex > -1) records[existingIndex] = recordData;
                 
@@ -617,7 +691,7 @@
                     const singleName = names[i];
                     const singleId = (baseTimestamp + i).toString();
                     const recordData = { 
-                        id: singleId, date, person: singleName, product, price, cost, received, arrived, shipped, image, notes 
+                        id: singleId, date, person: singleName, product, price, cost, received, ordered, location, shipped, image, notes 
                     };
 
                     records.unshift(recordData);
@@ -642,10 +716,21 @@
             }
         }
 
-        async function toggleStatus(id, field) {
+        async function toggleOrdered(id) {
             const item = records.find(r => r.id === id);
             if (item) {
-                item[field] = !item[field];
+                item.ordered = !item.ordered;
+                localStorage.setItem('inventory_records', JSON.stringify(records));
+                renderAllPages();
+                await syncToCloud('save', item);
+            }
+        }
+
+        async function changeLocation(id, newLocation) {
+            const item = records.find(r => r.id === id);
+            if (item) {
+                item.location = newLocation;
+                item.shipped = (newLocation === '已寄出');
                 localStorage.setItem('inventory_records', JSON.stringify(records));
                 renderAllPages();
                 await syncToCloud('save', item);
@@ -663,8 +748,8 @@
             document.getElementById('priceInput').value = item.price;
             document.getElementById('costInput').value = item.cost || 0;
             document.getElementById('receivedInput').value = item.received;
-            document.getElementById('arrivedSelect').value = item.arrived ? 'true' : 'false';
-            document.getElementById('shippedSelect').value = item.shipped ? 'true' : 'false';
+            document.getElementById('orderedSelect').value = item.ordered ? 'true' : 'false';
+            document.getElementById('locationSelect').value = item.location || '代買中';
             document.getElementById('notesInput').value = item.notes || '';
 
             if (item.image) {
@@ -680,7 +765,7 @@
             toggleForm(true);
         }
 
-        // 渲染【進出貨管制】頁面（不含成本）
+        // 渲染【進出貨管制】頁面
         function renderTable() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const filter = document.getElementById('statusFilter').value;
@@ -691,19 +776,20 @@
                                       (r.notes || '').toLowerCase().includes(search);
                 let matchesFilter = true;
 
-                if (filter === 'arrived') matchesFilter = r.arrived;
-                else if (filter === 'not_arrived') matchesFilter = !r.arrived;
-                else if (filter === 'shipped') matchesFilter = r.shipped;
-                else if (filter === 'not_shipped') matchesFilter = !r.shipped;
-                else if (filter === 'unpaid') matchesFilter = !r.shipped && (r.price - r.received) > 0;
+                if (filter === 'ordered') matchesFilter = r.ordered;
+                else if (filter === 'not_ordered') matchesFilter = !r.ordered;
+                else if (filter === 'location_buying') matchesFilter = (r.location === '代買中');
+                else if (filter === 'location_shipping') matchesFilter = (r.location === '郵寄中');
+                else if (filter === 'location_arrived') matchesFilter = (r.location === '已到貨');
+                else if (filter === 'location_shipped') matchesFilter = (r.location === '已寄出');
 
                 return matchesSearch && matchesFilter;
             });
 
             const totalPrice = records.reduce((sum, r) => sum + r.price, 0);
             const totalReceived = records.reduce((sum, r) => sum + r.received, 0);
-            const totalPending = records.reduce((sum, r) => sum + (r.shipped ? 0 : Math.max(0, r.price - r.received)), 0);
-            const pendingShipCount = records.filter(r => !r.shipped).length;
+            const totalPending = records.reduce((sum, r) => sum + (r.location === '已寄出' ? 0 : Math.max(0, r.price - r.received)), 0);
+            const pendingShipCount = records.filter(r => r.location !== '已寄出').length;
 
             document.getElementById('totalPrice').innerText = '$' + totalPrice.toLocaleString();
             document.getElementById('totalReceived').innerText = '$' + totalReceived.toLocaleString();
@@ -714,8 +800,8 @@
             tbody.innerHTML = '';
 
             filtered.forEach(r => {
-                const pending = r.shipped ? 0 : Math.max(0, r.price - r.received);
-                const isPaidInFull = r.shipped || pending === 0;
+                const isShipped = (r.location === '已寄出');
+                const pending = isShipped ? 0 : Math.max(0, r.price - r.received);
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50 transition';
@@ -732,19 +818,22 @@
                     <td class="py-3 px-4 text-right font-medium text-slate-900" data-label="售價">$${r.price.toLocaleString()}</td>
                     <td class="py-3 px-4 text-right text-emerald-600 font-medium" data-label="已收金額">$${r.received.toLocaleString()}</td>
                     <td class="py-3 px-4 text-right" data-label="未收尾款">
-                        ${isPaidInFull 
-                            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-700">$0 (已付清)</span>` 
+                        ${isShipped || pending === 0 
+                            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-700">$0 (已清)</span>` 
                             : `<span class="font-bold text-rose-600">$${pending.toLocaleString()}</span>`}
                     </td>
-                    <td class="py-3 px-4 text-center" data-label="到貨狀態">
-                        <button onclick="toggleStatus('${r.id}', 'arrived')" class="px-2.5 py-1 rounded-full text-xs font-semibold transition ${r.arrived ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}">
-                            ${r.arrived ? '已到貨' : '未到貨'}
+                    <td class="py-3 px-4 text-center" data-label="訂購狀態">
+                        <button onclick="toggleOrdered('${r.id}')" class="px-2.5 py-1 rounded-full text-xs font-semibold transition ${r.ordered ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                            ${r.ordered ? '已訂購' : '未訂購'}
                         </button>
                     </td>
-                    <td class="py-3 px-4 text-center" data-label="寄出狀態">
-                        <button onclick="toggleStatus('${r.id}', 'shipped')" class="px-2.5 py-1 rounded-full text-xs font-semibold transition ${r.shipped ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
-                            ${r.shipped ? '已寄出' : '未寄出'}
-                        </button>
+                    <td class="py-3 px-4 text-center" data-label="商品位置">
+                        <select onchange="changeLocation('${r.id}', this.value)" class="text-xs font-semibold border border-slate-200 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500 bg-white">
+                            <option value="代買中" ${r.location === '代買中' ? 'selected' : ''}>代買中</option>
+                            <option value="郵寄中" ${r.location === '郵寄中' ? 'selected' : ''}>郵寄中</option>
+                            <option value="已到貨" ${r.location === '已到貨' ? 'selected' : ''}>已到貨</option>
+                            <option value="已寄出" ${r.location === '已寄出' ? 'selected' : ''}>已寄出</option>
+                        </select>
                     </td>
                     <td class="py-3 px-4 text-slate-500 text-xs max-w-xs truncate col-notes" data-label="備註">${escapeHtml(r.notes || '-')}</td>
                     <td class="py-3 px-4 text-center space-x-2 col-actions" data-label="操作">
@@ -755,6 +844,87 @@
                 tbody.appendChild(tr);
             });
             lucide.createIcons();
+        }
+
+        // 渲染【庫存與物流】頁面
+        function renderStockPage() {
+            const tbody = document.getElementById('stockTableBody');
+            tbody.innerHTML = '';
+
+            stockItems.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+
+                const isLowStock = item.qty <= 2;
+                const statusBadge = isLowStock 
+                    ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800">⚠️ 低庫存 (建議進貨)</span>`
+                    : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">庫存充足</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-slate-800" data-label="商品名稱">${escapeHtml(item.name)}</td>
+                    <td class="py-3 px-4 text-center text-base font-bold ${isLowStock ? 'text-rose-600' : 'text-slate-900'}" data-label="庫存數量">${item.qty} 件</td>
+                    <td class="py-3 px-4 text-center" data-label="進貨狀態">${statusBadge}</td>
+                    <td class="py-3 px-4 text-slate-600 text-sm" data-label="存放位置">${escapeHtml(item.position || '-')}</td>
+                    <td class="py-3 px-4 text-center" data-label="快速增減">
+                        <div class="inline-flex items-center space-x-1">
+                            <button onclick="adjustStock(${index}, -1)" class="w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded text-slate-700 font-bold flex items-center justify-center transition">-</button>
+                            <button onclick="adjustStock(${index}, 1)" class="w-7 h-7 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded font-bold flex items-center justify-center transition">+</button>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-center space-x-2 col-actions" data-label="操作">
+                        <button onclick="deleteStockItem(${index})" class="p-1 text-slate-400 hover:text-rose-600 transition"><i data-lucide="trash-2" class="w-4 h-4 inline"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // 計算物流進度狀態
+            let cBuying = 0, cShipping = 0, cArrived = 0, cShipped = 0;
+            records.forEach(r => {
+                const loc = r.location || (r.shipped ? '已寄出' : '代買中');
+                if (loc === '代買中') cBuying++;
+                else if (loc === '郵寄中') cShipping++;
+                else if (loc === '已到貨') cArrived++;
+                else if (loc === '已寄出') cShipped++;
+            });
+
+            document.getElementById('countBuying').innerText = cBuying + ' 件';
+            document.getElementById('countShipping').innerText = cShipping + ' 件';
+            document.getElementById('countArrived').innerText = cArrived + ' 件';
+            document.getElementById('countShipped').innerText = cShipped + ' 件';
+
+            lucide.createIcons();
+        }
+
+        function saveStockItem(e) {
+            e.preventDefault();
+            const name = document.getElementById('stockNameInput').value.trim();
+            const qty = parseInt(document.getElementById('stockQtyInput').value) || 0;
+            const position = document.getElementById('stockPosInput').value.trim();
+
+            if (!name) return;
+
+            stockItems.push({ name, qty, position });
+            localStorage.setItem('stock_items', JSON.stringify(stockItems));
+            
+            document.getElementById('stockForm').reset();
+            renderStockPage();
+        }
+
+        function adjustStock(index, delta) {
+            if (stockItems[index]) {
+                stockItems[index].qty = Math.max(0, stockItems[index].qty + delta);
+                localStorage.setItem('stock_items', JSON.stringify(stockItems));
+                renderStockPage();
+            }
+        }
+
+        function deleteStockItem(index) {
+            if (confirm('確定要刪除這項庫存品項嗎？')) {
+                stockItems.splice(index, 1);
+                localStorage.setItem('stock_items', JSON.stringify(stockItems));
+                renderStockPage();
+            }
         }
 
         // 渲染【成本與利潤】頁面
@@ -781,11 +951,7 @@
                     <td class="py-3 px-4 text-right font-medium text-slate-900" data-label="售價">$${r.price.toLocaleString()}</td>
                     <td class="py-3 px-4 text-right text-slate-600" data-label="成本">$${cost.toLocaleString()}</td>
                     <td class="py-3 px-4 text-right font-bold ${profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}" data-label="利潤">$${profit.toLocaleString()}</td>
-                    <td class="py-3 px-4 text-center" data-label="寄出狀態">
-                        <span class="px-2 py-0.5 rounded text-xs font-semibold ${r.shipped ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}">
-                            ${r.shipped ? '已寄出' : '未寄出'}
-                        </span>
-                    </td>
+                    <td class="py-3 px-4 text-center" data-label="商品位置 font-semibold text-slate-700">${escapeHtml(r.location || '代買中')}</td>
                     <td class="py-3 px-4 text-slate-500 text-xs max-w-xs truncate col-notes" data-label="備註">${escapeHtml(r.notes || '-')}</td>
                 `;
                 tbody.appendChild(tr);
@@ -861,20 +1027,8 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top' },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => `${context.dataset.label}: $${context.raw.toLocaleString()}`
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { callback: (val) => '$' + val.toLocaleString() }
-                        }
-                    }
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
@@ -889,10 +1043,10 @@
             if (records.length === 0) { alert('目前無紀錄！'); return; }
 
             let csvContent = "\uFEFF";
-            csvContent += "日期,人名,商品名稱,售價,成本,單筆利潤,已收金額,未收金額/尾款,到貨狀態,寄出狀態,備註\n";
+            csvContent += "日期,人名,商品名稱,售價,成本,單筆利潤,已收金額,未收金額/尾款,訂購狀態,商品位置,備註\n";
 
             records.forEach(r => {
-                const pending = r.shipped ? 0 : Math.max(0, r.price - r.received);
+                const pending = (r.location === '已寄出') ? 0 : Math.max(0, r.price - r.received);
                 const cost = r.cost || 0;
                 const profit = r.price - cost;
                 const row = [
@@ -903,9 +1057,9 @@
                     cost,
                     profit,
                     r.received,
-                    r.shipped ? "已付清" : pending,
-                    r.arrived ? "已到貨" : "未到貨",
-                    r.shipped ? "已寄出" : "未寄出",
+                    (r.location === '已寄出') ? "已清" : pending,
+                    r.ordered ? "已訂購" : "未訂購",
+                    `"${r.location || '代買中'}"`,
                     `"${(r.notes || '').replace(/"/g, '""')}"`
                 ];
                 csvContent += row.join(",") + "\n";
@@ -914,7 +1068,7 @@
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `進出貨與成本利潤表_${new Date().toISOString().split('T')[0]}.csv`;
+            link.download = `進出貨與庫存表_${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
