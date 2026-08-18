@@ -95,12 +95,34 @@
 
         <!-- 2. 庫存與物流 Tab -->
         <section id="tab-inventory" class="tab-content hidden">
+            <!-- 新增庫存卡片 -->
+            <div class="bg-white p-5 rounded-xl shadow border border-amber-200 mb-6">
+                <h2 class="text-lg font-bold text-amber-900 mb-3 flex items-center space-x-2 border-b border-amber-100 pb-2">
+                    <i data-lucide="plus-square" class="w-5 h-5 text-amber-600"></i>
+                    <span>新增進貨 / 設定初始庫存</span>
+                </h2>
+                <form onsubmit="addStock(event)" class="flex flex-col sm:flex-row gap-3 items-end">
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-bold text-amber-800 mb-1">商品名稱</label>
+                        <input type="text" id="stockProductName" required placeholder="例如：拉拉熊玩偶" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div class="w-full sm:w-36">
+                        <label class="block text-xs font-bold text-amber-800 mb-1">進貨數量</label>
+                        <input type="number" id="stockQty" min="1" required placeholder="例如：10" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <button type="submit" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-1">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>加入庫存</span>
+                    </button>
+                </form>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- 商品庫存卡片列表 -->
                 <div class="bg-white p-5 rounded-xl shadow border border-amber-200">
                     <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center space-x-2 border-b border-amber-100 pb-2">
                         <i data-lucide="box" class="w-5 h-5 text-amber-600"></i>
-                        <span>商品庫存彙整 (連動工作表2)</span>
+                        <span>商品庫存彙整</span>
                     </h2>
                     <div id="inventoryList" class="space-y-3">
                         <!-- 動態計算剩餘庫存 -->
@@ -271,10 +293,10 @@
     <!-- JavaScript 邏輯庫 -->
     <script>
         let records = JSON.parse(localStorage.getItem('rilakkuma_records')) || [];
+        let stockData = JSON.parse(localStorage.getItem('rilakkuma_stock')) || {};
         let apiUrl = localStorage.getItem('rilakkuma_api_url') || '';
         let profitChartInstance = null;
 
-        // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
@@ -282,7 +304,6 @@
             renderAll();
         });
 
-        // 頁籤切換
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -298,18 +319,32 @@
             if (tabId === 'tab-analytics') updateAnalytics();
         }
 
-        // 儲存本地資料
         function saveData() {
             localStorage.setItem('rilakkuma_records', JSON.stringify(records));
+            localStorage.setItem('rilakkuma_stock', JSON.stringify(stockData));
             renderAll();
         }
 
-        // 渲染全部畫面
         function renderAll() {
             renderRecords();
             renderInventory();
             renderProfit();
             lucide.createIcons();
+        }
+
+        // 新增進貨/初始庫存邏輯
+        function addStock(e) {
+            e.preventDefault();
+            const pName = document.getElementById('stockProductName').value.trim();
+            const qty = Number(document.getElementById('stockQty').value) || 0;
+
+            if (pName && qty > 0) {
+                stockData[pName] = (stockData[pName] || 0) + qty;
+                saveData();
+                document.getElementById('stockProductName').value = '';
+                document.getElementById('stockQty').value = '';
+                alert(`已成功新增【${pName}】進貨數量：${qty}`);
+            }
         }
 
         // 1. 渲染進出貨管制表
@@ -359,34 +394,46 @@
             }
         }
 
-        // 2. 渲染庫存與物流
+        // 2. 渲染庫存與物流 (包含初始庫存計算)
         function renderInventory() {
             const list = document.getElementById('inventoryList');
             const progress = document.getElementById('shippingProgress');
             list.innerHTML = '';
             progress.innerHTML = '';
 
-            // 統計商品剩餘庫存
-            const counts = {};
+            const sales = {};
             records.forEach(r => {
                 if (r.product) {
-                    if (!counts[r.product]) counts[r.product] = { total: 0, shipped: 0 };
-                    counts[r.product].total += 1;
-                    if (r.shipped || r.location === '已寄出') counts[r.product].shipped += 1;
+                    if (!sales[r.product]) sales[r.product] = { total: 0, shipped: 0 };
+                    sales[r.product].total += 1;
+                    if (r.shipped || r.location === '已寄出') sales[r.product].shipped += 1;
                 }
             });
 
-            for (const [prod, val] of Object.entries(counts)) {
-                const remaining = val.total - val.shipped;
-                list.innerHTML += `
-                    <div class="flex justify-between items-center p-3 bg-amber-50/50 rounded-lg border border-amber-100">
-                        <span class="font-medium text-amber-900">${prod}</span>
-                        <div class="text-sm space-x-2">
-                            <span class="text-slate-500">總數: ${val.total}</span>
-                            <span class="font-bold ${remaining > 0 ? 'text-amber-600' : 'text-slate-400'}">未寄出: ${remaining}</span>
+            // 集合所有商品名稱 (來自初始庫存 + 銷售紀錄)
+            const allProducts = new Set([...Object.keys(stockData), ...Object.keys(sales)]);
+
+            if (allProducts.size === 0) {
+                list.innerHTML = `<p class="text-sm text-slate-400">目前尚無庫存資料，請由上方新增進貨。</p>`;
+            } else {
+                allProducts.forEach(prod => {
+                    const totalIn = stockData[prod] || 0;
+                    const soldCount = sales[prod] ? sales[prod].total : 0;
+                    const currentStock = totalIn - soldCount;
+
+                    list.innerHTML += `
+                        <div class="flex justify-between items-center p-3 bg-amber-50/50 rounded-lg border border-amber-100">
+                            <div>
+                                <span class="font-medium text-amber-900 block">${prod}</span>
+                                <span class="text-xs text-slate-500">進貨總量: ${totalIn} | 已售出: ${soldCount}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-slate-400 block">剩餘庫存</span>
+                                <span class="font-bold text-lg ${currentStock < 0 ? 'text-rose-600' : 'text-amber-700'}">${currentStock} 件</span>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                });
             }
 
             // 出貨進度
@@ -432,7 +479,7 @@
             });
         }
 
-        // 4. 圖表統計 (Chart.js)
+        // 4. 圖表統計
         function updateAnalytics() {
             const yearSelect = document.getElementById('analyticsYearSelect');
             const years = [...new Set(records.map(r => (r.date || '').split('-')[0]))].filter(Boolean);
@@ -470,9 +517,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
@@ -514,7 +559,6 @@
             const notes = document.getElementById('inputNotes').value;
             const shipped = location === '已寄出';
 
-            // 支持逗號拆分多名買家
             const people = personInput.split(',').map(p => p.trim()).filter(Boolean);
 
             people.forEach((personName, idx) => {
@@ -558,7 +602,7 @@
             }
         }
 
-        // 雲端同步核心邏輯 (完全相容修復版 GAS)
+        // 雲端同步
         async function syncToCloud(action, recordData) {
             if (!apiUrl) return;
             try {
@@ -589,7 +633,6 @@
             }
         }
 
-        // API Modal 操作
         function openApiModal() {
             document.getElementById('apiUrlInput').value = apiUrl;
             document.getElementById('apiModal').classList.remove('hidden');
