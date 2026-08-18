@@ -208,8 +208,10 @@
                     <input type="date" id="inputDate" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">人名 (多位可用逗號分隔)</label>
-                    <input type="text" id="inputPerson" placeholder="例如：張三, 李四" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">
+                        人名 <span class="text-amber-600 font-normal">(可一次輸入多位，用逗號或換行隔開，例如：張三, 李四, 王五)</span>
+                    </label>
+                    <textarea id="inputPerson" rows="2" placeholder="張三, 李四, 王五" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">商品名稱</label>
@@ -217,15 +219,15 @@
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">售價</label>
+                        <label class="block text-xs font-bold text-amber-800 mb-1">單人售價</label>
                         <input type="number" id="inputPrice" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">成本</label>
+                        <label class="block text-xs font-bold text-amber-800 mb-1">單人成本</label>
                         <input type="number" id="inputCost" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">已收金額</label>
+                        <label class="block text-xs font-bold text-amber-800 mb-1">單人已收金額</label>
                         <input type="number" id="inputReceived" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                 </div>
@@ -341,7 +343,6 @@
                 stockData[pName] = (stockData[pName] || 0) + qty;
                 saveData();
                 
-                // 發送同步至雲端
                 if (apiUrl) {
                     await syncToCloud('updateStock', { productName: pName, qty: qty });
                 }
@@ -543,11 +544,12 @@
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
         }
 
+        // 核心邏輯：拆解多人輸入為獨立項目
         function saveRecord(e) {
             e.preventDefault();
-            const id = document.getElementById('recordId').value || new Date().getTime().toString();
+            const editId = document.getElementById('recordId').value;
             const date = document.getElementById('inputDate').value;
-            const personInput = document.getElementById('inputPerson').value;
+            const rawPersonInput = document.getElementById('inputPerson').value;
             const product = document.getElementById('inputProduct').value;
             const price = Number(document.getElementById('inputPrice').value) || 0;
             const cost = Number(document.getElementById('inputCost').value) || 0;
@@ -557,20 +559,31 @@
             const notes = document.getElementById('inputNotes').value;
             const shipped = location === '已寄出';
 
-            const people = personInput.split(',').map(p => p.trim()).filter(Boolean);
+            // 支援使用 逗號(半形/全形)、頓號 或 換行 進行拆解
+            const people = rawPersonInput.split(/[,，\n、]+/).map(p => p.trim()).filter(Boolean);
 
-            people.forEach((personName, idx) => {
-                const singleId = people.length > 1 ? `${id}_${idx}` : id;
-                const newRecord = { id: singleId, date, person: personName, product, price, cost, received, location, ordered, shipped, notes };
-
-                const existingIndex = records.findIndex(r => r.id === singleId);
+            if (editId) {
+                // 若為編輯單一項目，直接更新該筆
+                const existingIndex = records.findIndex(r => r.id === editId);
+                const updatedRecord = { 
+                    id: editId, date, person: people[0] || rawPersonInput, product, price, cost, received, location, ordered, shipped, notes 
+                };
                 if (existingIndex > -1) {
-                    records[existingIndex] = newRecord;
-                } else {
-                    records.push(newRecord);
+                    records[existingIndex] = updatedRecord;
                 }
-                syncToCloud('save', newRecord);
-            });
+                syncToCloud('save', updatedRecord);
+            } else {
+                // 若為新增，依據輸入的人名數量，拆解為獨立的個體項目
+                const timestamp = new Date().getTime();
+                people.forEach((personName, idx) => {
+                    const singleId = `${timestamp}_${idx}`;
+                    const newRecord = { 
+                        id: singleId, date, person: personName, product, price, cost, received, location, ordered, shipped, notes 
+                    };
+                    records.push(newRecord);
+                    syncToCloud('save', newRecord);
+                });
+            }
 
             saveData();
             closeFormModal();
