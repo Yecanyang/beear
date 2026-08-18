@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>拉拉熊的回家計畫 - 進出貨管制系統</title>
+    <title>拉拉熊的回家計畫</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -75,10 +75,12 @@
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-amber-100/70 text-amber-900 border-b border-amber-200">
+                            <th class="p-3 text-center">圖片</th>
                             <th class="p-3">日期</th>
                             <th class="p-3">人名</th>
                             <th class="p-3">商品名稱</th>
-                            <th class="p-3">售價</th>
+                            <th class="p-3 text-center">數量</th>
+                            <th class="p-3">單價/售價</th>
                             <th class="p-3">已收金額</th>
                             <th class="p-3">未收金額</th>
                             <th class="p-3 text-center">商品位置</th>
@@ -95,11 +97,10 @@
 
         <!-- 2. 庫存與物流 Tab -->
         <section id="tab-inventory" class="tab-content hidden">
-            <!-- 新增庫存卡片 -->
             <div class="bg-white p-5 rounded-xl shadow border border-amber-200 mb-6">
                 <h2 class="text-lg font-bold text-amber-900 mb-3 flex items-center space-x-2 border-b border-amber-100 pb-2">
                     <i data-lucide="plus-square" class="w-5 h-5 text-amber-600"></i>
-                    <span>新增進貨 / 設定初始庫存 (連動雲端工作表2)</span>
+                    <span>新增進貨 / 設定初始庫存</span>
                 </h2>
                 <form onsubmit="addStock(event)" class="flex flex-col sm:flex-row gap-3 items-end">
                     <div class="flex-1 w-full">
@@ -118,25 +119,19 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- 商品庫存卡片列表 -->
                 <div class="bg-white p-5 rounded-xl shadow border border-amber-200">
                     <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center space-x-2 border-b border-amber-100 pb-2">
                         <i data-lucide="box" class="w-5 h-5 text-amber-600"></i>
                         <span>商品庫存彙整</span>
                     </h2>
-                    <div id="inventoryList" class="space-y-3">
-                        <!-- 動態計算剩餘庫存 -->
-                    </div>
+                    <div id="inventoryList" class="space-y-3"></div>
                 </div>
-                <!-- 出貨進度追蹤 -->
                 <div class="bg-white p-5 rounded-xl shadow border border-amber-200">
                     <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center space-x-2 border-b border-amber-100 pb-2">
                         <i data-lucide="truck" class="w-5 h-5 text-amber-600"></i>
                         <span>出貨狀態概況</span>
                     </h2>
-                    <div id="shippingProgress" class="space-y-4">
-                        <!-- 動態進度條 -->
-                    </div>
+                    <div id="shippingProgress" class="space-y-4"></div>
                 </div>
             </div>
         </section>
@@ -154,15 +149,14 @@
                             <tr class="bg-amber-100/70 text-amber-900 border-b border-amber-200">
                                 <th class="p-3">買家</th>
                                 <th class="p-3">商品</th>
-                                <th class="p-3">售價</th>
-                                <th class="p-3">成本</th>
-                                <th class="p-3">預估毛利</th>
+                                <th class="p-3">數量</th>
+                                <th class="p-3">總售價</th>
+                                <th class="p-3">總成本</th>
+                                <th class="p-3">預估總毛利</th>
                                 <th class="p-3">毛利率</th>
                             </tr>
                         </thead>
-                        <tbody id="profitTableBody" class="divide-y divide-amber-100">
-                            <!-- 動態毛利資料 -->
-                        </tbody>
+                        <tbody id="profitTableBody" class="divide-y divide-amber-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -178,9 +172,7 @@
                     </h2>
                     <div class="flex items-center space-x-2">
                         <label class="text-sm font-medium text-amber-800">年份:</label>
-                        <select id="analyticsYearSelect" onchange="updateAnalytics()" class="border border-amber-300 rounded px-3 py-1 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <!-- 動態填入年份 -->
-                        </select>
+                        <select id="analyticsYearSelect" onchange="updateAnalytics()" class="border border-amber-300 rounded px-3 py-1 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
                     </div>
                 </div>
                 <div class="relative w-full h-[380px] sm:h-[420px]">
@@ -207,16 +199,25 @@
                     <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">日期</label>
                     <input type="date" id="inputDate" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
+                
                 <div>
                     <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">
                         人名 <span class="text-amber-600 font-normal">(可一次輸入多位，用逗號或換行隔開，例如：張三, 李四, 王五)</span>
                     </label>
                     <textarea id="inputPerson" rows="2" placeholder="張三, 李四, 王五" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">商品名稱</label>
-                    <input type="text" id="inputProduct" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-amber-800 mb-1">商品名稱</label>
+                        <input type="text" id="inputProduct" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-amber-800 mb-1">每人數量</label>
+                        <input type="number" id="inputQuantity" min="1" value="1" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
                 </div>
+
                 <div class="grid grid-cols-3 gap-2">
                     <div>
                         <label class="block text-xs font-bold text-amber-800 mb-1">單人售價</label>
@@ -231,6 +232,25 @@
                         <input type="number" id="inputReceived" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                 </div>
+
+                <!-- 圖片輸入與上傳預覽 -->
+                <div>
+                    <label class="block text-xs font-bold text-amber-800 mb-1">商品圖片 (貼上網址 或 選擇照片上傳)</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="url" id="inputImageUrl" placeholder="https://example.com/image.jpg" class="flex-1 border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="file" id="inputImageFile" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
+                        <button type="button" onclick="document.getElementById('inputImageFile').click()" class="bg-amber-100 text-amber-800 hover:bg-amber-200 px-3 py-2 rounded-lg text-xs font-medium flex items-center space-x-1">
+                            <i data-lucide="image" class="w-4 h-4"></i>
+                            <span>上傳</span>
+                        </button>
+                    </div>
+                    <!-- 圖片預覽區域 -->
+                    <div id="imagePreviewContainer" class="hidden relative w-20 h-20 border rounded-lg overflow-hidden bg-slate-50">
+                        <img id="imagePreview" class="w-full h-full object-cover">
+                        <button type="button" onclick="removeImage()" class="absolute top-0 right-0 bg-rose-600 text-white rounded-bl p-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-xs font-bold text-amber-800 mb-1">商品位置</label>
@@ -250,6 +270,7 @@
                         </select>
                     </div>
                 </div>
+
                 <div>
                     <label class="block text-xs font-bold text-amber-800 mb-1">備註</label>
                     <textarea id="inputNotes" rows="2" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
@@ -291,12 +312,13 @@
         </div>
     </div>
 
-    <!-- JavaScript 邏輯庫 -->
+    <!-- JavaScript 邏輯 -->
     <script>
         let records = JSON.parse(localStorage.getItem('rilakkuma_records')) || [];
         let stockData = JSON.parse(localStorage.getItem('rilakkuma_stock')) || {};
         let apiUrl = localStorage.getItem('rilakkuma_api_url') || '';
         let profitChartInstance = null;
+        let currentBase64Image = '';
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
@@ -333,7 +355,33 @@
             lucide.createIcons();
         }
 
-        // 新增進貨/初始庫存並同步至雲端工作表2
+        // 圖片上傳處理 Base64
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentBase64Image = evt.target.result;
+                    showImagePreview(currentBase64Image);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showImagePreview(url) {
+            const img = document.getElementById('imagePreview');
+            const container = document.getElementById('imagePreviewContainer');
+            img.src = url;
+            container.classList.remove('hidden');
+        }
+
+        function removeImage() {
+            currentBase64Image = '';
+            document.getElementById('inputImageUrl').value = '';
+            document.getElementById('inputImageFile').value = '';
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+        }
+
         async function addStock(e) {
             e.preventDefault();
             const pName = document.getElementById('stockProductName').value.trim();
@@ -342,14 +390,10 @@
             if (pName && qty > 0) {
                 stockData[pName] = (stockData[pName] || 0) + qty;
                 saveData();
-                
-                if (apiUrl) {
-                    await syncToCloud('updateStock', { productName: pName, qty: qty });
-                }
-
+                if (apiUrl) await syncToCloud('updateStock', { productName: pName, qty: qty });
                 document.getElementById('stockProductName').value = '';
                 document.getElementById('stockQty').value = '';
-                alert(`已同步【${pName}】進貨數量 ${qty} 到雲端庫存 (工作表2)`);
+                alert(`已同步【${pName}】進貨數量 ${qty} 到雲端庫存`);
             }
         }
 
@@ -364,15 +408,24 @@
             );
 
             filtered.forEach(r => {
-                const unpaid = (Number(r.price) || 0) - (Number(r.received) || 0);
+                const qty = Number(r.quantity) || 1;
+                const price = Number(r.price) || 0;
+                const received = Number(r.received) || 0;
+                const unpaid = price - received;
+                const imgUrl = r.imageUrl || r.image || '';
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-amber-50/60 transition";
                 tr.innerHTML = `
+                    <td class="p-2 text-center">
+                        ${imgUrl ? `<img src="${imgUrl}" class="w-10 h-10 object-cover rounded-md mx-auto border cursor-pointer" onclick="window.open('${imgUrl}')">` : `<div class="w-10 h-10 bg-slate-100 rounded-md mx-auto flex items-center justify-center text-slate-300"><i data-lucide="image" class="w-5 h-5"></i></div>`}
+                    </td>
                     <td class="p-3 text-slate-600">${r.date || ''}</td>
                     <td class="p-3 font-medium text-slate-800">${r.person || ''}</td>
                     <td class="p-3 text-slate-700">${r.product || ''}</td>
-                    <td class="p-3 text-slate-700">$${r.price || 0}</td>
-                    <td class="p-3 text-emerald-600">$${r.received || 0}</td>
+                    <td class="p-3 text-center font-bold text-amber-900">${qty}</td>
+                    <td class="p-3 text-slate-700">$${price}</td>
+                    <td class="p-3 text-emerald-600">$${received}</td>
                     <td class="p-3 ${unpaid > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'}">$${unpaid}</td>
                     <td class="p-3 text-center">
                         <span class="px-2 py-1 rounded-full text-xs ${getLocationBadge(r.location)}">${r.location || '代買中'}</span>
@@ -408,9 +461,10 @@
             const sales = {};
             records.forEach(r => {
                 if (r.product) {
+                    const q = Number(r.quantity) || 1;
                     if (!sales[r.product]) sales[r.product] = { total: 0, shipped: 0 };
-                    sales[r.product].total += 1;
-                    if (r.shipped || r.location === '已寄出') sales[r.product].shipped += 1;
+                    sales[r.product].total += q;
+                    if (r.shipped || r.location === '已寄出') sales[r.product].shipped += q;
                 }
             });
 
@@ -461,8 +515,9 @@
             tbody.innerHTML = '';
 
             records.forEach(r => {
-                const price = Number(r.price) || 0;
-                const cost = Number(r.cost) || 0;
+                const qty = Number(r.quantity) || 1;
+                const price = (Number(r.price) || 0) * qty;
+                const cost = (Number(r.cost) || 0) * qty;
                 const profit = price - cost;
                 const margin = price > 0 ? ((profit / price) * 100).toFixed(1) : '0.0';
 
@@ -471,6 +526,7 @@
                 tr.innerHTML = `
                     <td class="p-3 text-slate-800">${r.person || ''}</td>
                     <td class="p-3 text-slate-700">${r.product || ''}</td>
+                    <td class="p-3 font-semibold text-amber-900">${qty}</td>
                     <td class="p-3 text-slate-700">$${price}</td>
                     <td class="p-3 text-slate-500">$${cost}</td>
                     <td class="p-3 font-semibold ${profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">$${profit}</td>
@@ -493,8 +549,9 @@
             records.forEach(r => {
                 if (r.date && r.date.startsWith(selectedYear)) {
                     const m = parseInt(r.date.split('-')[1]) - 1;
+                    const qty = Number(r.quantity) || 1;
                     if (m >= 0 && m < 12) {
-                        monthlyProfit[m] += (Number(r.price) || 0) - (Number(r.cost) || 0);
+                        monthlyProfit[m] += ((Number(r.price) || 0) - (Number(r.cost) || 0)) * qty;
                     }
                 }
             });
@@ -542,43 +599,41 @@
             document.getElementById('recordForm').reset();
             document.getElementById('recordId').value = '';
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+            removeImage();
         }
 
-        // 核心邏輯：拆解多人輸入為獨立項目
+        // 保存與拆解多個人名
         function saveRecord(e) {
             e.preventDefault();
             const editId = document.getElementById('recordId').value;
             const date = document.getElementById('inputDate').value;
             const rawPersonInput = document.getElementById('inputPerson').value;
             const product = document.getElementById('inputProduct').value;
+            const quantity = Number(document.getElementById('inputQuantity').value) || 1;
             const price = Number(document.getElementById('inputPrice').value) || 0;
             const cost = Number(document.getElementById('inputCost').value) || 0;
             const received = Number(document.getElementById('inputReceived').value) || 0;
             const location = document.getElementById('inputLocation').value;
             const ordered = document.getElementById('inputOrdered').value === 'true';
             const notes = document.getElementById('inputNotes').value;
+            const imageUrl = currentBase64Image || document.getElementById('inputImageUrl').value.trim();
             const shipped = location === '已寄出';
 
-            // 支援使用 逗號(半形/全形)、頓號 或 換行 進行拆解
             const people = rawPersonInput.split(/[,，\n、]+/).map(p => p.trim()).filter(Boolean);
 
             if (editId) {
-                // 若為編輯單一項目，直接更新該筆
                 const existingIndex = records.findIndex(r => r.id === editId);
                 const updatedRecord = { 
-                    id: editId, date, person: people[0] || rawPersonInput, product, price, cost, received, location, ordered, shipped, notes 
+                    id: editId, date, person: people[0] || rawPersonInput, product, quantity, price, cost, received, location, ordered, shipped, notes, imageUrl 
                 };
-                if (existingIndex > -1) {
-                    records[existingIndex] = updatedRecord;
-                }
+                if (existingIndex > -1) records[existingIndex] = updatedRecord;
                 syncToCloud('save', updatedRecord);
             } else {
-                // 若為新增，依據輸入的人名數量，拆解為獨立的個體項目
                 const timestamp = new Date().getTime();
                 people.forEach((personName, idx) => {
                     const singleId = `${timestamp}_${idx}`;
                     const newRecord = { 
-                        id: singleId, date, person: personName, product, price, cost, received, location, ordered, shipped, notes 
+                        id: singleId, date, person: personName, product, quantity, price, cost, received, location, ordered, shipped, notes, imageUrl 
                     };
                     records.push(newRecord);
                     syncToCloud('save', newRecord);
@@ -596,12 +651,19 @@
             document.getElementById('inputDate').value = r.date || '';
             document.getElementById('inputPerson').value = r.person || '';
             document.getElementById('inputProduct').value = r.product || '';
+            document.getElementById('inputQuantity').value = r.quantity || 1;
             document.getElementById('inputPrice').value = r.price || 0;
             document.getElementById('inputCost').value = r.cost || 0;
             document.getElementById('inputReceived').value = r.received || 0;
             document.getElementById('inputLocation').value = r.location || '代買中';
             document.getElementById('inputOrdered').value = r.ordered ? 'true' : 'false';
             document.getElementById('inputNotes').value = r.notes || '';
+            
+            const img = r.imageUrl || r.image || '';
+            if (img) {
+                document.getElementById('inputImageUrl').value = img.startsWith('http') ? img : '';
+                showImagePreview(img);
+            }
             openFormModal(true);
         }
 
@@ -613,7 +675,6 @@
             }
         }
 
-        // 雲端同步發送
         async function syncToCloud(action, payloadData) {
             if (!apiUrl) return;
             try {
@@ -629,19 +690,13 @@
             }
         }
 
-        // 從雲端取得 工作表1 與 工作表2
         async function fetchData() {
             if (!apiUrl) return;
             try {
                 const response = await fetch(apiUrl);
                 const data = await response.json();
-                
-                if (data.records && Array.isArray(data.records)) {
-                    records = data.records;
-                }
-                if (data.stock) {
-                    stockData = data.stock;
-                }
+                if (data.records && Array.isArray(data.records)) records = data.records;
+                if (data.stock) stockData = data.stock;
                 saveData();
             } catch (err) {
                 console.error("無法從雲端讀取資料:", err);
