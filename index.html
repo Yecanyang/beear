@@ -12,7 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-amber-50 min-h-screen text-slate-800 pb-12">
-
     <!-- 頂部導航列 -->
     <header class="bg-amber-600 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
@@ -126,6 +125,7 @@
                     </h2>
                     <div id="inventoryList" class="space-y-3"></div>
                 </div>
+
                 <div class="bg-white p-5 rounded-xl shadow border border-amber-200">
                     <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center space-x-2 border-b border-amber-100 pb-2">
                         <i data-lucide="truck" class="w-5 h-5 text-amber-600"></i>
@@ -180,7 +180,6 @@
                 </div>
             </div>
         </section>
-
     </main>
 
     <!-- 新增/編輯 Modal 彈窗 -->
@@ -333,12 +332,10 @@
                 btn.classList.remove('bg-amber-600', 'text-white');
                 btn.classList.add('text-amber-800', 'hover:bg-amber-100');
             });
-
             document.getElementById(tabId).classList.remove('hidden');
             const activeBtn = document.getElementById(`btn-${tabId}`);
             activeBtn.classList.add('bg-amber-600', 'text-white');
             activeBtn.classList.remove('text-amber-800', 'hover:bg-amber-100');
-
             if (tabId === 'tab-analytics') updateAnalytics();
         }
 
@@ -382,11 +379,11 @@
             document.getElementById('imagePreviewContainer').classList.add('hidden');
         }
 
+        // 新增進貨
         async function addStock(e) {
             e.preventDefault();
             const pName = document.getElementById('stockProductName').value.trim();
             const qty = Number(document.getElementById('stockQty').value) || 0;
-
             if (pName && qty > 0) {
                 stockData[pName] = (stockData[pName] || 0) + qty;
                 saveData();
@@ -397,23 +394,48 @@
             }
         }
 
+        // 修改庫存進貨總量
+        async function editStock(pName) {
+            const currentQty = stockData[pName] || 0;
+            const newQtyStr = prompt(`請輸入【${pName}】的新進貨總量：`, currentQty);
+            
+            if (newQtyStr !== null) {
+                const newQty = Number(newQtyStr);
+                if (!isNaN(newQty) && newQty >= 0) {
+                    stockData[pName] = newQty;
+                    saveData();
+                    if (apiUrl) await syncToCloud('editStock', { productName: pName, qty: newQty });
+                    alert(`【${pName}】的進貨總量已更新為 ${newQty}`);
+                } else {
+                    alert('請輸入有效的數字！');
+                }
+            }
+        }
+
+        // 刪除庫存項目
+        async function deleteStock(pName) {
+            if (confirm(`確定要刪除【${pName}】的庫存紀錄嗎？\n（注意：這不會影響該商品已建立的訂單紀錄）`)) {
+                delete stockData[pName];
+                saveData();
+                if (apiUrl) await syncToCloud('deleteStock', { productName: pName });
+                alert(`已刪除【${pName}】的庫存紀錄`);
+            }
+        }
+
         function renderRecords() {
             const tbody = document.getElementById('recordsTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase();
             tbody.innerHTML = '';
-
             const filtered = records.filter(r => 
                 (r.person && r.person.toLowerCase().includes(search)) || 
                 (r.product && r.product.toLowerCase().includes(search))
             );
-
             filtered.forEach(r => {
                 const qty = Number(r.quantity) || 1;
                 const price = Number(r.price) || 0;
                 const received = Number(r.received) || 0;
                 const unpaid = price - received;
                 const imgUrl = r.imageUrl || r.image || '';
-
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-amber-50/60 transition";
                 tr.innerHTML = `
@@ -452,13 +474,14 @@
             }
         }
 
+        // 渲染庫存列表（包含編輯與刪除按鈕）
         function renderInventory() {
             const list = document.getElementById('inventoryList');
             const progress = document.getElementById('shippingProgress');
             list.innerHTML = '';
             progress.innerHTML = '';
-
             const sales = {};
+
             records.forEach(r => {
                 if (r.product) {
                     const q = Number(r.quantity) || 1;
@@ -469,7 +492,6 @@
             });
 
             const allProducts = new Set([...Object.keys(stockData), ...Object.keys(sales)]);
-
             if (allProducts.size === 0) {
                 list.innerHTML = `<p class="text-sm text-slate-400">目前尚無庫存資料，請由上方新增進貨。</p>`;
             } else {
@@ -477,6 +499,7 @@
                     const totalIn = stockData[prod] || 0;
                     const soldCount = sales[prod] ? sales[prod].total : 0;
                     const currentStock = totalIn - soldCount;
+                    const safeProd = prod.replace(/'/g, "\\'");
 
                     list.innerHTML += `
                         <div class="flex justify-between items-center p-3 bg-amber-50/50 rounded-lg border border-amber-100">
@@ -484,9 +507,19 @@
                                 <span class="font-medium text-amber-900 block">${prod}</span>
                                 <span class="text-xs text-slate-500">進貨總量: ${totalIn} | 已售出: ${soldCount}</span>
                             </div>
-                            <div class="text-right">
-                                <span class="text-xs text-slate-400 block">剩餘庫存</span>
-                                <span class="font-bold text-lg ${currentStock < 0 ? 'text-rose-600' : 'text-amber-700'}">${currentStock} 件</span>
+                            <div class="flex items-center space-x-3">
+                                <div class="text-right">
+                                    <span class="text-xs text-slate-400 block">剩餘庫存</span>
+                                    <span class="font-bold text-lg ${currentStock < 0 ? 'text-rose-600' : 'text-amber-700'}">${currentStock} 件</span>
+                                </div>
+                                <div class="flex items-center space-x-1 border-l border-amber-200 pl-2">
+                                    <button onclick="editStock('${safeProd}')" title="修改進貨總量" class="text-amber-600 hover:text-amber-800 p-1">
+                                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="deleteStock('${safeProd}')" title="刪除庫存項目" class="text-rose-500 hover:text-rose-700 p-1">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -496,7 +529,6 @@
             const totalOrders = records.length;
             const shippedOrders = records.filter(r => r.shipped || r.location === '已寄出').length;
             const pct = totalOrders > 0 ? Math.round((shippedOrders / totalOrders) * 100) : 0;
-
             progress.innerHTML = `
                 <div>
                     <div class="flex justify-between text-sm font-medium mb-1">
@@ -508,19 +540,19 @@
                     </div>
                 </div>
             `;
+
+            lucide.createIcons();
         }
 
         function renderProfit() {
             const tbody = document.getElementById('profitTableBody');
             tbody.innerHTML = '';
-
             records.forEach(r => {
                 const qty = Number(r.quantity) || 1;
                 const price = (Number(r.price) || 0) * qty;
                 const cost = (Number(r.cost) || 0) * qty;
                 const profit = price - cost;
                 const margin = price > 0 ? ((profit / price) * 100).toFixed(1) : '0.0';
-
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-amber-50/60 transition";
                 tr.innerHTML = `
@@ -540,12 +572,10 @@
             const yearSelect = document.getElementById('analyticsYearSelect');
             const years = [...new Set(records.map(r => (r.date || '').split('-')[0]))].filter(Boolean);
             if (years.length === 0) years.push(new Date().getFullYear().toString());
-
             yearSelect.innerHTML = years.map(y => `<option value="${y}">${y} 年</option>`).join('');
             
             const selectedYear = yearSelect.value || years[0];
             const monthlyProfit = Array(12).fill(0);
-
             records.forEach(r => {
                 if (r.date && r.date.startsWith(selectedYear)) {
                     const m = parseInt(r.date.split('-')[1]) - 1;
@@ -555,10 +585,8 @@
                     }
                 }
             });
-
             const ctx = document.getElementById('profitChart').getContext('2d');
             if (profitChartInstance) profitChartInstance.destroy();
-
             profitChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -639,7 +667,6 @@
                     syncToCloud('save', newRecord);
                 });
             }
-
             saveData();
             closeFormModal();
         }
