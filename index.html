@@ -58,21 +58,25 @@
 
         <!-- 1. 進出貨管制 Tab -->
         <section id="tab-records" class="tab-content">
-            <!-- 搜尋與狀態篩選工具列 -->
             <div class="bg-white p-4 rounded-xl shadow border border-amber-200 mb-4 space-y-3">
                 <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
-                    <button onclick="openFormModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-2 shrink-0">
-                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                        <span>新增訂單紀錄</span>
-                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="openFormModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-2 shrink-0">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            <span>新增訂單紀錄</span>
+                        </button>
+                        <!-- 批量刪除按鈕 -->
+                        <button id="batchDeleteBtn" onclick="batchDeleteRecords()" class="hidden bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-1 shrink-0">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <span id="batchDeleteText">刪除選取 (0)</span>
+                        </button>
+                    </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-1 max-w-3xl">
-                        <!-- 搜尋輸入框 -->
                         <div class="relative">
                             <input type="text" id="searchInput" oninput="renderRecords()" placeholder="搜尋買家人名或商品..." class="w-full pl-9 pr-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white text-sm">
                             <i data-lucide="search" class="w-4 h-4 text-amber-500 absolute left-3 top-2.5"></i>
                         </div>
-                        <!-- 是否訂購篩選 -->
                         <div>
                             <select id="filterOrdered" onchange="renderRecords()" class="w-full border border-amber-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none">
                                 <option value="ALL">全部訂購狀態</option>
@@ -80,7 +84,6 @@
                                 <option value="false">未訂購</option>
                             </select>
                         </div>
-                        <!-- 商品位置篩選 -->
                         <div>
                             <select id="filterLocation" onchange="renderRecords()" class="w-full border border-amber-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none">
                                 <option value="ALL">全部位置</option>
@@ -94,7 +97,7 @@
                     </div>
                 </div>
 
-                <!-- 即時金額統計看板 -->
+                <!-- 金額統計看板 -->
                 <div class="grid grid-cols-3 gap-2 pt-2 border-t border-amber-100 text-center">
                     <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
                         <span class="text-xs text-amber-800 block">篩選後總售價</span>
@@ -116,6 +119,9 @@
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-amber-100/70 text-amber-900 border-b border-amber-200">
+                            <th class="p-3 text-center">
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
+                            </th>
                             <th class="p-3 text-center">圖片</th>
                             <th class="p-3">日期</th>
                             <th class="p-3">人名</th>
@@ -275,7 +281,7 @@
                     <div>
                         <label class="block text-xs font-bold text-amber-800 mb-1">單人單價</label>
                         <input type="number" id="inputPrice" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                        <div id="modalTotalPreview" class="text-xs font-bold text-amber-700 mt-1">總售價：$0</div>
+                        <div id="modalTotalPreview" class="text-xs font-bold text-amber-700 mt-1">預估總售價：$0</div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-amber-800 mb-1">單件成本</label>
@@ -392,7 +398,6 @@
             lucide.createIcons();
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
             
-            // 綁定彈窗內數量與單價變更事件，即時顯示預估總售價
             document.getElementById('inputQuantity').addEventListener('input', calculateModalTotal);
             document.getElementById('inputPrice').addEventListener('input', calculateModalTotal);
 
@@ -400,7 +405,6 @@
             renderAll();
         });
 
-        // 彈窗內即時計算總金額 preview
         function calculateModalTotal() {
             const qty = Number(document.getElementById('inputQuantity').value) || 0;
             const price = Number(document.getElementById('inputPrice').value) || 0;
@@ -434,7 +438,7 @@
             lucide.createIcons();
         }
 
-        // 1. 渲染進出貨管制表格 (支援直接修改數量與單價)
+        // 1. 渲染進出貨管制表格 (包含多選框與即時欄位修改)
         function renderRecords() {
             const tbody = document.getElementById('recordsTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -442,6 +446,10 @@
             const filterLocation = document.getElementById('filterLocation').value;
             tbody.innerHTML = '';
             
+            const selectAllCb = document.getElementById('selectAllCheckbox');
+            if (selectAllCb) selectAllCb.checked = false;
+            updateBatchDeleteBtn();
+
             let totalSum = 0;
             let receivedSum = 0;
             let unpaidSum = 0;
@@ -462,9 +470,9 @@
             filtered.forEach(r => {
                 const qty = Number(r.quantity) || 1;
                 const unitPrice = Number(r.price) || 0;
-                const totalPrice = unitPrice * qty; // 自動計算單筆總售價
+                const totalPrice = unitPrice * qty;
                 const received = Number(r.received) || 0;
-                const unpaid = totalPrice - received; // 自動計算未收金額
+                const unpaid = totalPrice - received;
                 const imgUrl = r.imageUrl || r.image || '';
 
                 totalSum += totalPrice;
@@ -474,6 +482,9 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-amber-50/60 transition";
                 tr.innerHTML = `
+                    <td class="p-3 text-center">
+                        <input type="checkbox" value="${r.id}" onchange="updateBatchDeleteBtn()" class="record-checkbox w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
+                    </td>
                     <td class="p-2 text-center">
                         ${imgUrl ? `<img src="${imgUrl}" class="w-10 h-10 object-cover rounded-md mx-auto border cursor-pointer" onclick="window.open('${imgUrl}')">` : `<div class="w-10 h-10 bg-slate-100 rounded-md mx-auto flex items-center justify-center text-slate-300"><i data-lucide="image" class="w-5 h-5"></i></div>`}
                     </td>
@@ -519,6 +530,45 @@
             document.getElementById('statTotalPrice').innerText = `$${totalSum}`;
             document.getElementById('statReceivedPrice').innerText = `$${receivedSum}`;
             document.getElementById('statUnpaidPrice').innerText = `$${unpaidSum}`;
+        }
+
+        // 批量全選與按鈕狀態
+        function toggleSelectAll(master) {
+            const checkboxes = document.querySelectorAll('.record-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+            updateBatchDeleteBtn();
+        }
+
+        function updateBatchDeleteBtn() {
+            const selected = document.querySelectorAll('.record-checkbox:checked');
+            const btn = document.getElementById('batchDeleteBtn');
+            const txt = document.getElementById('batchDeleteText');
+            
+            if (selected.length > 0) {
+                btn.classList.remove('hidden');
+                txt.innerText = `刪除選取 (${selected.length})`;
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        async function batchDeleteRecords() {
+            const selectedCheckboxes = document.querySelectorAll('.record-checkbox:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+            if (selectedIds.length === 0) return;
+
+            if (confirm(`確定要一次刪除勾選的 ${selectedIds.length} 筆訂單紀錄嗎？`)) {
+                records = records.filter(r => !selectedIds.includes(String(r.id)));
+                saveData();
+
+                if (apiUrl) {
+                    await syncToCloud('batchDelete', { ids: selectedIds });
+                }
+
+                document.getElementById('selectAllCheckbox').checked = false;
+                updateBatchDeleteBtn();
+            }
         }
 
         function getLocationBadge(loc) {
@@ -599,7 +649,7 @@
             lucide.createIcons();
         }
 
-        // 3. 渲染成本與利潤 Tab (支援直接修改成本、包材、運費)
+        // 3. 渲染成本與利潤 Tab
         function renderProfit() {
             const tbody = document.getElementById('profitTableBody');
             tbody.innerHTML = '';
@@ -657,7 +707,7 @@
             });
         }
 
-        // 表格內通用欄位修改與即時同步
+        // 表格通用即時修改與同步
         function updateRecordField(id, field, value) {
             const r = records.find(rec => String(rec.id) === String(id));
             if (!r) return;
@@ -724,7 +774,7 @@
             });
         }
 
-        // Modal 操作邏輯
+        // Modal 操作
         function openFormModal(isEdit = false) {
             document.getElementById('modalTitle').innerText = isEdit ? '編輯訂單紀錄' : '新增訂單紀錄';
             document.getElementById('formModal').classList.remove('hidden');
@@ -826,7 +876,7 @@
             }
         }
 
-        // 圖片處理 logic
+        // 圖片處理
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if (file) {
@@ -905,7 +955,7 @@
             }
         }
 
-        // API 雲端通訊
+        // 雲端同步 logic
         async function syncToCloud(action, payloadData) {
             if (!apiUrl) return;
             try {
