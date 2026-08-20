@@ -97,7 +97,7 @@
                 <!-- 即時金額統計看板 -->
                 <div class="grid grid-cols-3 gap-2 pt-2 border-t border-amber-100 text-center">
                     <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
-                        <span class="text-xs text-amber-800 block">篩選後總金額</span>
+                        <span class="text-xs text-amber-800 block">篩選後總售價</span>
                         <span id="statTotalPrice" class="font-bold text-amber-900 text-sm sm:text-base">$0</span>
                     </div>
                     <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
@@ -121,7 +121,7 @@
                             <th class="p-3">人名</th>
                             <th class="p-3">商品名稱</th>
                             <th class="p-3 text-center">訂購數量</th>
-                            <th class="p-3">單價/售價</th>
+                            <th class="p-3">售價 / 單價</th>
                             <th class="p-3">已收金額</th>
                             <th class="p-3">未收金額</th>
                             <th class="p-3 text-center">訂購狀態</th>
@@ -178,7 +178,7 @@
             </div>
         </section>
 
-        <!-- 3. 成本與利潤 Tab (直覺即時修改) -->
+        <!-- 3. 成本與利潤 Tab -->
         <section id="tab-profit" class="tab-content hidden">
             <div class="bg-white p-5 rounded-xl shadow border border-amber-200">
                 <div class="flex justify-between items-center mb-4 border-b border-amber-100 pb-2">
@@ -187,7 +187,7 @@
                         <span>單筆明細獲利分析</span>
                     </h2>
                     <span class="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                        💡 可直接於欄位中修改單件成本、包材與運費，系統會自動儲存並算毛利
+                        💡 可直接於欄位中修改單件成本、包材與運費，系統會自動儲存並計算毛利
                     </span>
                 </div>
                 <div class="overflow-x-auto">
@@ -273,11 +273,12 @@
 
                 <div class="grid grid-cols-3 gap-2">
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">單人售價</label>
+                        <label class="block text-xs font-bold text-amber-800 mb-1">單人單價</label>
                         <input type="number" id="inputPrice" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <div id="modalTotalPreview" class="text-xs font-bold text-amber-700 mt-1">總售價：$0</div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">商品成本</label>
+                        <label class="block text-xs font-bold text-amber-800 mb-1">單件成本</label>
                         <input type="number" id="inputCost" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div>
@@ -390,9 +391,22 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+            
+            // 綁定彈窗內數量與單價變更事件，即時顯示預估總售價
+            document.getElementById('inputQuantity').addEventListener('input', calculateModalTotal);
+            document.getElementById('inputPrice').addEventListener('input', calculateModalTotal);
+
             if (apiUrl) fetchData();
             renderAll();
         });
+
+        // 彈窗內即時計算總金額 preview
+        function calculateModalTotal() {
+            const qty = Number(document.getElementById('inputQuantity').value) || 0;
+            const price = Number(document.getElementById('inputPrice').value) || 0;
+            const total = qty * price;
+            document.getElementById('modalTotalPreview').innerText = `預估總售價：$${total}`;
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -420,89 +434,14 @@
             lucide.createIcons();
         }
 
-        function handleImageUpload(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const maxW = 500;
-                        let scale = 1;
-                        if (img.width > maxW) scale = maxW / img.width;
-                        canvas.width = img.width * scale;
-                        canvas.height = img.height * scale;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        currentBase64Image = canvas.toDataURL('image/jpeg', 0.7);
-                        showImagePreview(currentBase64Image);
-                    };
-                    img.src = evt.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function showImagePreview(url) {
-            const img = document.getElementById('imagePreview');
-            const container = document.getElementById('imagePreviewContainer');
-            img.src = url;
-            container.classList.remove('hidden');
-        }
-
-        function removeImage() {
-            currentBase64Image = '';
-            document.getElementById('inputImageUrl').value = '';
-            document.getElementById('inputImageFile').value = '';
-            document.getElementById('imagePreviewContainer').classList.add('hidden');
-        }
-
-        async function addStock(e) {
-            e.preventDefault();
-            const pName = document.getElementById('stockProductName').value.trim();
-            const qty = Number(document.getElementById('stockQty').value) || 0;
-            if (pName && qty > 0) {
-                stockData[pName] = (stockData[pName] || 0) + qty;
-                saveData();
-                if (apiUrl) await syncToCloud('updateStock', { productName: pName, qty: qty });
-                document.getElementById('stockProductName').value = '';
-                document.getElementById('stockQty').value = '';
-                alert(`已同步【${pName}】進貨數量 ${qty} 到雲端庫存`);
-            }
-        }
-
-        async function editStock(pName) {
-            const currentQty = stockData[pName] || 0;
-            const newQtyStr = prompt(`請輸入【${pName}】的新進貨總量：`, currentQty);
-            if (newQtyStr !== null) {
-                const newQty = Number(newQtyStr);
-                if (!isNaN(newQty) && newQty >= 0) {
-                    stockData[pName] = newQty;
-                    saveData();
-                    if (apiUrl) await syncToCloud('editStock', { productName: pName, qty: newQty });
-                    alert(`【${pName}】的進貨總量已更新為 ${newQty}`);
-                } else {
-                    alert('請輸入有效的數字！');
-                }
-            }
-        }
-
-        async function deleteStock(pName) {
-            if (confirm(`確定要刪除【${pName}】的庫存紀錄嗎？`)) {
-                delete stockData[pName];
-                saveData();
-                if (apiUrl) await syncToCloud('deleteStock', { productName: pName });
-                alert(`已刪除【${pName}】的庫存紀錄`);
-            }
-        }
-
+        // 1. 渲染進出貨管制表格 (支援直接修改數量與單價)
         function renderRecords() {
             const tbody = document.getElementById('recordsTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase().trim();
             const filterOrdered = document.getElementById('filterOrdered').value;
             const filterLocation = document.getElementById('filterLocation').value;
             tbody.innerHTML = '';
+            
             let totalSum = 0;
             let receivedSum = 0;
             let unpaidSum = 0;
@@ -522,11 +461,13 @@
 
             filtered.forEach(r => {
                 const qty = Number(r.quantity) || 1;
-                const price = Number(r.price) || 0;
+                const unitPrice = Number(r.price) || 0;
+                const totalPrice = unitPrice * qty; // 自動計算單筆總售價
                 const received = Number(r.received) || 0;
-                const unpaid = price - received;
+                const unpaid = totalPrice - received; // 自動計算未收金額
                 const imgUrl = r.imageUrl || r.image || '';
-                totalSum += price;
+
+                totalSum += totalPrice;
                 receivedSum += received;
                 unpaidSum += unpaid;
 
@@ -539,8 +480,22 @@
                     <td class="p-3 text-slate-600 whitespace-nowrap">${r.date || ''}</td>
                     <td class="p-3 font-medium text-slate-800">${r.person || ''}</td>
                     <td class="p-3 text-slate-700">${r.product || ''}</td>
-                    <td class="p-3 text-center font-bold text-amber-900">${qty}</td>
-                    <td class="p-3 text-slate-700">$${price}</td>
+                    <td class="p-3 text-center">
+                        <input type="number" min="1" value="${qty}" 
+                            onchange="updateRecordField('${r.id}', 'quantity', this.value)" 
+                            class="w-16 text-center font-bold text-amber-900 border border-amber-300 rounded px-1 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
+                            title="修改數量">
+                    </td>
+                    <td class="p-3">
+                        <div class="font-bold text-slate-800">$${totalPrice}</div>
+                        <div class="flex items-center space-x-1 mt-0.5">
+                            <span class="text-xs text-slate-400">單價$</span>
+                            <input type="number" min="0" value="${unitPrice}" 
+                                onchange="updateRecordField('${r.id}', 'price', this.value)" 
+                                class="w-20 border border-amber-300 rounded px-1.5 py-0.5 text-xs bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
+                                title="修改單價">
+                        </div>
+                    </td>
                     <td class="p-3 text-emerald-600 font-medium">$${received}</td>
                     <td class="p-3 ${unpaid > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'}">$${unpaid}</td>
                     <td class="p-3 text-center">
@@ -576,6 +531,7 @@
             }
         }
 
+        // 2. 渲染庫存與物流 Tab
         function renderInventory() {
             const list = document.getElementById('inventoryList');
             const progress = document.getElementById('shippingProgress');
@@ -643,14 +599,17 @@
             lucide.createIcons();
         }
 
-        // 渲染成本與利潤頁籤 (可直接於 Table 內修改)
+        // 3. 渲染成本與利潤 Tab (支援直接修改成本、包材、運費)
         function renderProfit() {
             const tbody = document.getElementById('profitTableBody');
             tbody.innerHTML = '';
             records.forEach(r => {
                 const qty = Number(r.quantity) || 1;
-                const totalPrice = (Number(r.price) || 0) * qty;
-                const totalProdCost = (Number(r.cost) || 0) * qty;
+                const unitPrice = Number(r.price) || 0;
+                const totalPrice = unitPrice * qty;
+                
+                const unitCost = Number(r.cost) || 0;
+                const totalProdCost = unitCost * qty;
                 const pkgCost = Number(r.packagingCost) || 0;
                 const shipCost = Number(r.shippingCost) || 0;
                 
@@ -667,8 +626,8 @@
                     <td class="p-3">
                         <div class="flex items-center space-x-1">
                             <span class="text-xs text-slate-400">$</span>
-                            <input type="number" min="0" value="${r.cost || 0}" 
-                                onchange="updateRecordCost('${r.id}', 'cost', this.value)" 
+                            <input type="number" min="0" value="${unitCost}" 
+                                onchange="updateRecordField('${r.id}', 'cost', this.value)" 
                                 class="w-20 border border-amber-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
                                 title="單件商品成本">
                         </div>
@@ -676,8 +635,8 @@
                     <td class="p-3">
                         <div class="flex items-center space-x-1">
                             <span class="text-xs text-slate-400">$</span>
-                            <input type="number" min="0" value="${r.packagingCost || 0}" 
-                                onchange="updateRecordCost('${r.id}', 'packagingCost', this.value)" 
+                            <input type="number" min="0" value="${pkgCost}" 
+                                onchange="updateRecordField('${r.id}', 'packagingCost', this.value)" 
                                 class="w-20 border border-amber-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
                                 title="包材費">
                         </div>
@@ -685,8 +644,8 @@
                     <td class="p-3">
                         <div class="flex items-center space-x-1">
                             <span class="text-xs text-slate-400">$</span>
-                            <input type="number" min="0" value="${r.shippingCost || 0}" 
-                                onchange="updateRecordCost('${r.id}', 'shippingCost', this.value)" 
+                            <input type="number" min="0" value="${shipCost}" 
+                                onchange="updateRecordField('${r.id}', 'shippingCost', this.value)" 
                                 class="w-20 border border-amber-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
                                 title="郵寄運費">
                         </div>
@@ -698,8 +657,8 @@
             });
         }
 
-        // 修改金額時自動更新並同步至雲端
-        function updateRecordCost(id, field, value) {
+        // 表格內通用欄位修改與即時同步
+        function updateRecordField(id, field, value) {
             const r = records.find(rec => String(rec.id) === String(id));
             if (!r) return;
             r[field] = Number(value) || 0;
@@ -707,6 +666,7 @@
             syncToCloud('save', r);
         }
 
+        // 4. 渲染年月盈虧統計
         function updateAnalytics() {
             const yearSelect = document.getElementById('analyticsYearSelect');
             const years = [...new Set(records.map(r => (r.date || '').split('-')[0]))].filter(Boolean);
@@ -764,9 +724,11 @@
             });
         }
 
+        // Modal 操作邏輯
         function openFormModal(isEdit = false) {
             document.getElementById('modalTitle').innerText = isEdit ? '編輯訂單紀錄' : '新增訂單紀錄';
             document.getElementById('formModal').classList.remove('hidden');
+            calculateModalTotal();
         }
 
         function closeFormModal() {
@@ -864,6 +826,86 @@
             }
         }
 
+        // 圖片處理 logic
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const maxW = 500;
+                        let scale = 1;
+                        if (img.width > maxW) scale = maxW / img.width;
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        currentBase64Image = canvas.toDataURL('image/jpeg', 0.7);
+                        showImagePreview(currentBase64Image);
+                    };
+                    img.src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showImagePreview(url) {
+            const img = document.getElementById('imagePreview');
+            const container = document.getElementById('imagePreviewContainer');
+            img.src = url;
+            container.classList.remove('hidden');
+        }
+
+        function removeImage() {
+            currentBase64Image = '';
+            document.getElementById('inputImageUrl').value = '';
+            document.getElementById('inputImageFile').value = '';
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+        }
+
+        // 庫存操作
+        async function addStock(e) {
+            e.preventDefault();
+            const pName = document.getElementById('stockProductName').value.trim();
+            const qty = Number(document.getElementById('stockQty').value) || 0;
+            if (pName && qty > 0) {
+                stockData[pName] = (stockData[pName] || 0) + qty;
+                saveData();
+                if (apiUrl) await syncToCloud('updateStock', { productName: pName, qty: qty });
+                document.getElementById('stockProductName').value = '';
+                document.getElementById('stockQty').value = '';
+                alert(`已同步【${pName}】進貨數量 ${qty} 到雲端庫存`);
+            }
+        }
+
+        async function editStock(pName) {
+            const currentQty = stockData[pName] || 0;
+            const newQtyStr = prompt(`請輸入【${pName}】的新進貨總量：`, currentQty);
+            if (newQtyStr !== null) {
+                const newQty = Number(newQtyStr);
+                if (!isNaN(newQty) && newQty >= 0) {
+                    stockData[pName] = newQty;
+                    saveData();
+                    if (apiUrl) await syncToCloud('editStock', { productName: pName, qty: newQty });
+                    alert(`【${pName}】的進貨總量已更新為 ${newQty}`);
+                } else {
+                    alert('請輸入有效的數字！');
+                }
+            }
+        }
+
+        async function deleteStock(pName) {
+            if (confirm(`確定要刪除【${pName}】的庫存紀錄嗎？`)) {
+                delete stockData[pName];
+                saveData();
+                if (apiUrl) await syncToCloud('deleteStock', { productName: pName });
+                alert(`已刪除【${pName}】的庫存紀錄`);
+            }
+        }
+
+        // API 雲端通訊
         async function syncToCloud(action, payloadData) {
             if (!apiUrl) return;
             try {
