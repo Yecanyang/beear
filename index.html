@@ -131,9 +131,7 @@
                             <th class="p-3 text-center">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="recordsTableBody" class="divide-y divide-amber-100">
-                        <!-- 動態渲染表格內容 -->
-                    </tbody>
+                    <tbody id="recordsTableBody" class="divide-y divide-amber-100"></tbody>
                 </table>
             </div>
         </section>
@@ -180,22 +178,26 @@
             </div>
         </section>
 
-        <!-- 3. 成本與利潤 Tab -->
+        <!-- 3. 成本與利潤 Tab (直覺即時修改) -->
         <section id="tab-profit" class="tab-content hidden">
             <div class="bg-white p-5 rounded-xl shadow border border-amber-200">
-                <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center space-x-2 border-b border-amber-100 pb-2">
-                    <i data-lucide="badge-dollar-sign" class="w-5 h-5 text-amber-600"></i>
-                    <span>單筆明細獲利分析 (含商品成本、包材、郵寄費)</span>
-                </h2>
+                <div class="flex justify-between items-center mb-4 border-b border-amber-100 pb-2">
+                    <h2 class="text-lg font-bold text-amber-900 flex items-center space-x-2">
+                        <i data-lucide="badge-dollar-sign" class="w-5 h-5 text-amber-600"></i>
+                        <span>單筆明細獲利分析</span>
+                    </h2>
+                    <span class="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                        💡 可直接於欄位中修改單件成本、包材與運費，系統會自動儲存並算毛利
+                    </span>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr class="bg-amber-100/70 text-amber-900 border-b border-amber-200">
                                 <th class="p-3">買家</th>
-                                <th class="p-3">商品</th>
-                                <th class="p-3">訂購數量</th>
+                                <th class="p-3">商品 (數量)</th>
                                 <th class="p-3">總售價</th>
-                                <th class="p-3">商品總成本</th>
+                                <th class="p-3">單件商品成本</th>
                                 <th class="p-3">包材費</th>
                                 <th class="p-3">郵寄運費</th>
                                 <th class="p-3">預估總毛利</th>
@@ -227,7 +229,7 @@
                 </div>
 
                 <div class="border-t border-amber-100 pt-4">
-                    <h3 class="text-sm font-bold text-amber-900 mb-3">各月份盈虧金額明細 (正數以綠色表示，負數以紅色表示)</h3>
+                    <h3 class="text-sm font-bold text-amber-900 mb-3">各月份盈虧金額明細</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3" id="monthlyDetailGrid"></div>
                 </div>
             </div>
@@ -253,7 +255,7 @@
                 
                 <div>
                     <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">
-                        人名 <span class="text-amber-600 font-normal">(可一次輸入多位，用逗號或換行隔開，例如：張三, 李四)</span>
+                        人名 <span class="text-amber-600 font-normal">(可輸入多位，用逗號分隔)</span>
                     </label>
                     <textarea id="inputPerson" rows="2" placeholder="張三, 李四" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
                 </div>
@@ -301,7 +303,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-amber-800 mb-1">商品圖片 (貼上網址 或 選擇照片上傳)</label>
+                    <label class="block text-xs font-bold text-amber-800 mb-1">商品圖片 (網址或上傳照片)</label>
                     <div class="flex gap-2 mb-2">
                         <input type="url" id="inputImageUrl" placeholder="https://example.com/image.jpg" class="flex-1 border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         <input type="file" id="inputImageFile" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
@@ -338,7 +340,7 @@
 
                 <div>
                     <label class="block text-xs font-bold text-amber-800 mb-1">備註</label>
-                    <textarea id="inputNotes" rows="2" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none" placeholder="例如：包裝要求、特定交貨時間等"></textarea>
+                    <textarea id="inputNotes" rows="2" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none" placeholder="備註事項..."></textarea>
                 </div>
                 
                 <div class="flex justify-end space-x-2 pt-3 border-t border-amber-100">
@@ -495,7 +497,6 @@
             }
         }
 
-        // 渲染訂單與篩選統計 (含安全型別轉換)
         function renderRecords() {
             const tbody = document.getElementById('recordsTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -510,10 +511,7 @@
                 const personStr = String(r.person || '').toLowerCase();
                 const productStr = String(r.product || '').toLowerCase();
 
-                const matchesSearch = !search || 
-                    personStr.includes(search) || 
-                    productStr.includes(search);
-                
+                const matchesSearch = !search || personStr.includes(search) || productStr.includes(search);
                 const matchesOrdered = (filterOrdered === 'ALL') || 
                     (filterOrdered === 'true' && (r.ordered === true || r.ordered === '已訂購')) ||
                     (filterOrdered === 'false' && (!r.ordered || r.ordered === '未訂購'));
@@ -645,6 +643,7 @@
             lucide.createIcons();
         }
 
+        // 渲染成本與利潤頁籤 (可直接於 Table 內修改)
         function renderProfit() {
             const tbody = document.getElementById('profitTableBody');
             tbody.innerHTML = '';
@@ -662,18 +661,50 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-amber-50/60 transition";
                 tr.innerHTML = `
-                    <td class="p-3 text-slate-800">${r.person || ''}</td>
-                    <td class="p-3 text-slate-700">${r.product || ''}</td>
-                    <td class="p-3 font-semibold text-amber-900">${qty}</td>
-                    <td class="p-3 text-slate-700">$${totalPrice}</td>
-                    <td class="p-3 text-slate-500">$${totalProdCost}</td>
-                    <td class="p-3 text-slate-500">$${pkgCost}</td>
-                    <td class="p-3 text-slate-500">$${shipCost}</td>
+                    <td class="p-3 text-slate-800 font-medium">${r.person || ''}</td>
+                    <td class="p-3 text-slate-700">${r.product || ''} (x${qty})</td>
+                    <td class="p-3 text-slate-700 font-semibold">$${totalPrice}</td>
+                    <td class="p-3">
+                        <div class="flex items-center space-x-1">
+                            <span class="text-xs text-slate-400">$</span>
+                            <input type="number" min="0" value="${r.cost || 0}" 
+                                onchange="updateRecordCost('${r.id}', 'cost', this.value)" 
+                                class="w-20 border border-amber-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
+                                title="單件商品成本">
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <div class="flex items-center space-x-1">
+                            <span class="text-xs text-slate-400">$</span>
+                            <input type="number" min="0" value="${r.packagingCost || 0}" 
+                                onchange="updateRecordCost('${r.id}', 'packagingCost', this.value)" 
+                                class="w-20 border border-amber-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
+                                title="包材費">
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <div class="flex items-center space-x-1">
+                            <span class="text-xs text-slate-400">$</span>
+                            <input type="number" min="0" value="${r.shippingCost || 0}" 
+                                onchange="updateRecordCost('${r.id}', 'shippingCost', this.value)" 
+                                class="w-20 border border-amber-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
+                                title="郵寄運費">
+                        </div>
+                    </td>
                     <td class="p-3 font-semibold ${profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">$${profit}</td>
-                    <td class="p-3 text-slate-600">${margin}%</td>
+                    <td class="p-3 text-slate-600 font-medium">${margin}%</td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // 修改金額時自動更新並同步至雲端
+        function updateRecordCost(id, field, value) {
+            const r = records.find(rec => String(rec.id) === String(id));
+            if (!r) return;
+            r[field] = Number(value) || 0;
+            saveData();
+            syncToCloud('save', r);
         }
 
         function updateAnalytics() {
