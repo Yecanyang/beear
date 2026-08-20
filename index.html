@@ -94,7 +94,7 @@
                     </div>
                 </div>
 
-                <!-- 需求5、8：即時金額統計看板 -->
+                <!-- 即時金額統計看板 -->
                 <div class="grid grid-cols-3 gap-2 pt-2 border-t border-amber-100 text-center">
                     <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
                         <span class="text-xs text-amber-800 block">篩選後總金額</span>
@@ -221,11 +221,11 @@
                         <select id="analyticsYearSelect" onchange="updateAnalytics()" class="border border-amber-300 rounded px-3 py-1 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
                     </div>
                 </div>
+
                 <div class="relative w-full h-[320px] sm:h-[380px] mb-6">
                     <canvas id="profitChart"></canvas>
                 </div>
 
-                <!-- 需求10：每月盈虧數值表格顯示 -->
                 <div class="border-t border-amber-100 pt-4">
                     <h3 class="text-sm font-bold text-amber-900 mb-3">各月份盈虧金額明細 (正數以綠色表示，負數以紅色表示)</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3" id="monthlyDetailGrid"></div>
@@ -264,7 +264,6 @@
                         <input type="text" id="inputProduct" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div>
-                        <!-- 需求1：數量改為訂購數量 -->
                         <label class="block text-xs font-bold text-amber-800 mb-1">訂購數量</label>
                         <input type="number" id="inputQuantity" min="1" value="1" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
@@ -285,7 +284,6 @@
                     </div>
                 </div>
 
-                <!-- 需求6：新增包材費與郵寄運費輸入 -->
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-xs font-bold text-amber-800 mb-1">包材費</label>
@@ -297,13 +295,11 @@
                     </div>
                 </div>
 
-                <!-- 需求7：小禮物選項 -->
                 <div>
                     <label class="block text-xs font-bold text-amber-800 mb-1">小禮物</label>
                     <input type="text" id="inputGift" placeholder="無 / 贈品名稱" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
 
-                <!-- 圖片上傳 -->
                 <div>
                     <label class="block text-xs font-bold text-amber-800 mb-1">商品圖片 (貼上網址 或 選擇照片上傳)</label>
                     <div class="flex gap-2 mb-2">
@@ -340,7 +336,6 @@
                     </div>
                 </div>
 
-                <!-- 需求2：備註欄位保障呈現 -->
                 <div>
                     <label class="block text-xs font-bold text-amber-800 mb-1">備註</label>
                     <textarea id="inputNotes" rows="2" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none" placeholder="例如：包裝要求、特定交貨時間等"></textarea>
@@ -423,7 +418,6 @@
             lucide.createIcons();
         }
 
-        // 需求4修復：自動壓縮圖片尺寸與品質，防範雲端 API 超出大小上限
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if (file) {
@@ -501,28 +495,28 @@
             }
         }
 
-        // 需求5、8、9：渲染訂單與篩選統計
+        // 渲染訂單與篩選統計 (含安全型別轉換)
         function renderRecords() {
             const tbody = document.getElementById('recordsTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase().trim();
             const filterOrdered = document.getElementById('filterOrdered').value;
             const filterLocation = document.getElementById('filterLocation').value;
-
             tbody.innerHTML = '';
-
             let totalSum = 0;
             let receivedSum = 0;
             let unpaidSum = 0;
 
             const filtered = records.filter(r => {
+                const personStr = String(r.person || '').toLowerCase();
+                const productStr = String(r.product || '').toLowerCase();
+
                 const matchesSearch = !search || 
-                    (r.person && r.person.toLowerCase().includes(search)) || 
-                    (r.product && r.product.toLowerCase().includes(search));
+                    personStr.includes(search) || 
+                    productStr.includes(search);
                 
                 const matchesOrdered = (filterOrdered === 'ALL') || 
                     (filterOrdered === 'true' && (r.ordered === true || r.ordered === '已訂購')) ||
                     (filterOrdered === 'false' && (!r.ordered || r.ordered === '未訂購'));
-
                 const matchesLocation = (filterLocation === 'ALL') || (r.location === filterLocation);
 
                 return matchesSearch && matchesOrdered && matchesLocation;
@@ -534,7 +528,6 @@
                 const received = Number(r.received) || 0;
                 const unpaid = price - received;
                 const imgUrl = r.imageUrl || r.image || '';
-
                 totalSum += price;
                 receivedSum += received;
                 unpaidSum += unpaid;
@@ -548,7 +541,6 @@
                     <td class="p-3 text-slate-600 whitespace-nowrap">${r.date || ''}</td>
                     <td class="p-3 font-medium text-slate-800">${r.person || ''}</td>
                     <td class="p-3 text-slate-700">${r.product || ''}</td>
-                    <!-- 需求1：訂購數量 -->
                     <td class="p-3 text-center font-bold text-amber-900">${qty}</td>
                     <td class="p-3 text-slate-700">$${price}</td>
                     <td class="p-3 text-emerald-600 font-medium">$${received}</td>
@@ -558,12 +550,10 @@
                             ${r.ordered ? '已訂購' : '未訂購'}
                         </span>
                     </td>
-                    <!-- 需求7：小禮物 -->
                     <td class="p-3 text-center text-xs text-slate-600">${r.gift || '無'}</td>
                     <td class="p-3 text-center">
                         <span class="px-2 py-1 rounded-full text-xs ${getLocationBadge(r.location)}">${r.location || '代買中'}</span>
                     </td>
-                    <!-- 需求2：備註 -->
                     <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${r.notes || ''}">${r.notes || '-'}</td>
                     <td class="p-3 text-center space-x-1 whitespace-nowrap">
                         <button onclick="editRecord('${r.id}')" class="text-amber-600 hover:text-amber-800 p-1"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
@@ -573,7 +563,6 @@
                 tbody.appendChild(tr);
             });
 
-            // 需求5、8：更新金額統計欄位
             document.getElementById('statTotalPrice').innerText = `$${totalSum}`;
             document.getElementById('statReceivedPrice').innerText = `$${receivedSum}`;
             document.getElementById('statUnpaidPrice').innerText = `$${unpaidSum}`;
@@ -613,8 +602,7 @@
                     const totalIn = stockData[prod] || 0;
                     const soldCount = sales[prod] ? sales[prod].total : 0;
                     const currentStock = totalIn - soldCount;
-                    const safeProd = prod.replace(/'/g, "\\'");
-
+                    const safeProd = String(prod).replace(/'/g, "\\'");
                     list.innerHTML += `
                         <div class="flex justify-between items-center p-3 bg-amber-50/50 rounded-lg border border-amber-100">
                             <div>
@@ -657,7 +645,6 @@
             lucide.createIcons();
         }
 
-        // 需求6：成本與利潤（納入包材與運費）
         function renderProfit() {
             const tbody = document.getElementById('profitTableBody');
             tbody.innerHTML = '';
@@ -689,7 +676,6 @@
             });
         }
 
-        // 需求10：顯示年月盈虧正負金額明細
         function updateAnalytics() {
             const yearSelect = document.getElementById('analyticsYearSelect');
             const years = [...new Set(records.map(r => (r.date || '').split('-')[0]))].filter(Boolean);
@@ -711,7 +697,6 @@
                 }
             });
 
-            // 繪製圖表
             const ctx = document.getElementById('profitChart').getContext('2d');
             if (profitChartInstance) profitChartInstance.destroy();
             profitChartInstance = new Chart(ctx, {
@@ -733,7 +718,6 @@
                 }
             });
 
-            // 渲染12個月盈虧金額字卡（正數綠字、負數紅字）
             const grid = document.getElementById('monthlyDetailGrid');
             grid.innerHTML = '';
             monthlyProfit.forEach((val, idx) => {
@@ -779,9 +763,7 @@
             const ordered = document.getElementById('inputOrdered').value === 'true';
             const notes = document.getElementById('inputNotes').value;
             
-            // 需求3修復：編輯時若沒上傳新圖片，保留原有的圖片連結
             const imageUrl = currentBase64Image || document.getElementById('inputImageUrl').value.trim();
-
             const people = rawPersonInput.split(/[,，\n、]+/).map(p => p.trim()).filter(Boolean);
 
             if (editId) {
@@ -794,7 +776,6 @@
                     shipped: location === '已寄出', notes, 
                     imageUrl: imageUrl || oldRecord.imageUrl || oldRecord.image || '' 
                 };
-
                 if (existingIndex > -1) records[existingIndex] = updatedRecord;
                 syncToCloud('save', updatedRecord);
             } else {
@@ -814,7 +795,6 @@
             closeFormModal();
         }
 
-        // 需求3修復：編輯載入舊有圖片
         function editRecord(id) {
             const r = records.find(rec => String(rec.id) === String(id));
             if (!r) return;
