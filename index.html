@@ -11,9 +11,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-amber-50 min-h-screen text-slate-800 pb-12">
+<body class="bg-stone-50 min-h-screen text-slate-800 pb-12">
     <!-- 頂部導航列 -->
-    <header class="bg-amber-600 text-white shadow-md sticky top-0 z-50">
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center space-x-2">
                 <i data-lucide="package-check" class="w-7 h-7"></i>
@@ -21,55 +21,58 @@
             </div>
             
             <div class="flex items-center space-x-2 sm:space-x-3">
-                <span id="syncStatus" class="text-xs bg-amber-700/60 px-2 py-1 rounded text-amber-100 hidden sm:inline-block">未連結雲端</span>
+                <span id="syncStatus" class="text-xs bg-emerald-700/60 px-2 py-1 rounded text-emerald-100 hidden sm:inline-block">未連結雲端</span>
+                <!-- 隱藏的 CSV 檔案選擇器 -->
                 <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)" class="hidden">
-                <button onclick="document.getElementById('csvFileInput').click()" class="flex items-center space-x-1 bg-amber-500 hover:bg-amber-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
+                <button onclick="document.getElementById('csvFileInput').click()" class="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
                     <i data-lucide="file-up" class="w-4 h-4"></i>
                     <span>📥 匯入 Excel (CSV)</span>
                 </button>
-                <button onclick="openApiModal()" class="flex items-center space-x-1 bg-amber-700 hover:bg-amber-800 text-amber-100 text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
+                <button onclick="openApiModal()" class="flex items-center space-x-1 bg-emerald-700 hover:bg-emerald-800 text-emerald-100 text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
                     <i data-lucide="cloud-cog" class="w-4 h-4"></i>
                     <span>☁️ 雲端基地</span>
                 </button>
-                <button onclick="fetchData()" class="flex items-center space-x-1 bg-amber-500 hover:bg-amber-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
+                <button onclick="fetchData()" class="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     <span>重新整理</span>
                 </button>
             </div>
         </div>
     </header>
-
+ 
     <!-- 主體內容區塊 -->
     <main class="max-w-7xl mx-auto px-4 mt-6">
+        
         <!-- 頁籤切換按鈕 -->
-        <div class="flex border-b border-amber-200 mb-6 space-x-2 sm:space-x-4 overflow-x-auto pb-1">
-            <button onclick="switchTab('tab-records')" id="btn-tab-records" class="tab-btn active px-4 py-2 font-medium rounded-t-lg transition flex items-center space-x-2 bg-amber-600 text-white">
+        <div class="flex border-b border-emerald-200 mb-6 space-x-2 sm:space-x-4 overflow-x-auto pb-1">
+            <button onclick="switchTab('tab-records')" id="btn-tab-records" class="tab-btn active px-4 py-2 font-medium rounded-t-lg transition flex items-center space-x-2 bg-emerald-600 text-white">
                 <i data-lucide="clipboard-list" class="w-4 h-4"></i>
                 <span>進出貨管制</span>
             </button>
-            <button onclick="switchTab('tab-inventory')" id="btn-tab-inventory" class="tab-btn px-4 py-2 font-medium rounded-t-lg transition flex items-center space-x-2 text-amber-800 hover:bg-amber-100">
+            <button onclick="switchTab('tab-inventory')" id="btn-tab-inventory" class="tab-btn px-4 py-2 font-medium rounded-t-lg transition flex items-center space-x-2 text-emerald-800 hover:bg-emerald-100">
                 <i data-lucide="boxes" class="w-4 h-4"></i>
                 <span>庫存與物流</span>
             </button>
-            <button onclick="switchTab('tab-profit')" id="btn-tab-profit" class="tab-btn px-4 py-2 font-medium rounded-t-lg transition flex items-center space-x-2 text-amber-800 hover:bg-amber-100">
+            <button onclick="switchTab('tab-profit')" id="btn-tab-profit" class="tab-btn px-4 py-2 font-medium rounded-t-lg transition flex items-center space-x-2 text-emerald-800 hover:bg-emerald-100">
                 <i data-lucide="circle-dollar-sign" class="w-4 h-4"></i>
                 <span>成本與利潤</span>
             </button>
-            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-2 font-medium rounded-t-lg transition flex items-center space-x-2 text-amber-800 hover:bg-amber-100">
+            <button onclick="switchTab('tab-analytics')" id="btn-tab-analytics" class="tab-btn px-4 py-2 font-medium rounded-t-lg transition flex items-center space-x-2 text-emerald-800 hover:bg-emerald-100">
                 <i data-lucide="line-chart" class="w-4 h-4"></i>
                 <span>年月盈虧統計</span>
             </button>
         </div>
-
+ 
         <!-- 1. 進出貨管制 Tab -->
         <section id="tab-records" class="tab-content">
-            <div class="bg-white p-4 rounded-xl shadow border border-amber-200 mb-4 space-y-3">
+            <div class="bg-white p-4 rounded-xl shadow border border-emerald-200 mb-4 space-y-3">
                 <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
                     <div class="flex items-center space-x-2">
-                        <button onclick="openFormModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-2 shrink-0">
+                        <button onclick="openFormModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-2 shrink-0">
                             <i data-lucide="plus-circle" class="w-5 h-5"></i>
                             <span>新增訂單紀錄</span>
                         </button>
+                        <!-- 批量刪除按鈕 -->
                         <button id="batchDeleteBtn" onclick="batchDeleteRecords()" class="hidden bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-1 shrink-0">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                             <span id="batchDeleteText">刪除選取 (0)</span>
@@ -78,18 +81,18 @@
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-1 max-w-3xl">
                         <div class="relative">
-                            <input type="text" id="searchInput" oninput="renderRecords()" placeholder="搜尋買家人名或商品..." class="w-full pl-9 pr-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white text-sm">
-                            <i data-lucide="search" class="w-4 h-4 text-amber-500 absolute left-3 top-2.5"></i>
+                            <input type="text" id="searchInput" oninput="renderRecords()" placeholder="搜尋買家人名或商品..." class="w-full pl-9 pr-3 py-2 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm">
+                            <i data-lucide="search" class="w-4 h-4 text-emerald-500 absolute left-3 top-2.5"></i>
                         </div>
                         <div>
-                            <select id="filterOrdered" onchange="renderRecords()" class="w-full border border-amber-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none">
+                            <select id="filterOrdered" onchange="renderRecords()" class="w-full border border-emerald-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
                                 <option value="ALL">全部訂購狀態</option>
                                 <option value="true">已訂購</option>
                                 <option value="false">未訂購</option>
                             </select>
                         </div>
                         <div>
-                            <select id="filterLocation" onchange="renderRecords()" class="w-full border border-amber-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none">
+                            <select id="filterLocation" onchange="renderRecords()" class="w-full border border-emerald-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
                                 <option value="ALL">全部位置</option>
                                 <option value="代買中">代買中</option>
                                 <option value="日本家中">日本家中</option>
@@ -100,12 +103,12 @@
                         </div>
                     </div>
                 </div>
-
+ 
                 <!-- 金額統計看板 -->
-                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-amber-100 text-center">
-                    <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
-                        <span class="text-xs text-amber-800 block">篩選後總售價</span>
-                        <span id="statTotalPrice" class="font-bold text-amber-900 text-sm sm:text-base">$0</span>
+                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-emerald-100 text-center">
+                    <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                        <span class="text-xs text-emerald-800 block">篩選後總售價</span>
+                        <span id="statTotalPrice" class="font-bold text-emerald-900 text-sm sm:text-base">$0</span>
                     </div>
                     <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
                         <span class="text-xs text-emerald-800 block">已收金額</span>
@@ -117,14 +120,14 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 資料表格：標頭 14 欄 -->
-            <div class="bg-white rounded-xl shadow border border-amber-200 overflow-x-auto">
+ 
+            <!-- 資料表格 -->
+            <div class="bg-white rounded-xl shadow border border-emerald-200 overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="bg-amber-100/70 text-amber-900 border-b border-amber-200">
+                        <tr class="bg-emerald-100/70 text-emerald-900 border-b border-emerald-200">
                             <th class="p-3 text-center">
-                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer">
                             </th>
                             <th class="p-3 text-center">圖片</th>
                             <th class="p-3">日期</th>
@@ -141,71 +144,71 @@
                             <th class="p-3 text-center">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="recordsTableBody" class="divide-y divide-amber-100"></tbody>
+                    <tbody id="recordsTableBody" class="divide-y divide-emerald-100"></tbody>
                 </table>
             </div>
         </section>
-
+ 
         <!-- 2. 庫存與物流 Tab -->
         <section id="tab-inventory" class="tab-content hidden">
-            <div class="bg-white p-5 rounded-xl shadow border border-amber-200 mb-6">
-                <h2 class="text-lg font-bold text-amber-900 mb-3 flex items-center space-x-2 border-b border-amber-100 pb-2">
-                    <i data-lucide="plus-square" class="w-5 h-5 text-amber-600"></i>
+            <div class="bg-white p-5 rounded-xl shadow border border-emerald-200 mb-6">
+                <h2 class="text-lg font-bold text-emerald-900 mb-3 flex items-center space-x-2 border-b border-emerald-100 pb-2">
+                    <i data-lucide="plus-square" class="w-5 h-5 text-emerald-600"></i>
                     <span>新增進貨 / 設定初始庫存與單件成本</span>
                 </h2>
                 <form onsubmit="addStock(event)" class="flex flex-col sm:flex-row gap-3 items-end">
                     <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold text-amber-800 mb-1">商品名稱</label>
-                        <input type="text" id="stockProductName" required placeholder="例如：拉拉熊玩偶" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">商品名稱</label>
+                        <input type="text" id="stockProductName" required placeholder="例如：拉拉熊玩偶" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                     <div class="w-full sm:w-32">
-                        <label class="block text-xs font-bold text-amber-800 mb-1">進貨數量</label>
-                        <input type="number" id="stockQty" min="1" required placeholder="例如：10" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">進貨數量</label>
+                        <input type="number" id="stockQty" min="1" required placeholder="例如：10" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                     <div class="w-full sm:w-32">
-                        <label class="block text-xs font-bold text-amber-800 mb-1">單件成本 ($)</label>
-                        <input type="number" id="stockCost" min="0" placeholder="例如：250" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">單件成本 ($)</label>
+                        <input type="number" id="stockCost" min="0" placeholder="例如：250" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
-                    <button type="submit" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-1">
+                    <button type="submit" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-1">
                         <i data-lucide="cloud-upload" class="w-4 h-4"></i>
                         <span>同步到雲端庫存</span>
                     </button>
                 </form>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-5 rounded-xl shadow border border-amber-200">
-                    <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center space-x-2 border-b border-amber-100 pb-2">
-                        <i data-lucide="box" class="w-5 h-5 text-amber-600"></i>
+                <div class="bg-white p-5 rounded-xl shadow border border-emerald-200">
+                    <h2 class="text-lg font-bold text-emerald-900 mb-4 flex items-center space-x-2 border-b border-emerald-100 pb-2">
+                        <i data-lucide="box" class="w-5 h-5 text-emerald-600"></i>
                         <span>商品庫存彙整</span>
                     </h2>
                     <div id="inventoryList" class="space-y-3"></div>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow border border-amber-200">
-                    <h2 class="text-lg font-bold text-amber-900 mb-4 flex items-center space-x-2 border-b border-amber-100 pb-2">
-                        <i data-lucide="truck" class="w-5 h-5 text-amber-600"></i>
+                <div class="bg-white p-5 rounded-xl shadow border border-emerald-200">
+                    <h2 class="text-lg font-bold text-emerald-900 mb-4 flex items-center space-x-2 border-b border-emerald-100 pb-2">
+                        <i data-lucide="truck" class="w-5 h-5 text-emerald-600"></i>
                         <span>出貨狀態概況</span>
                     </h2>
                     <div id="shippingProgress" class="space-y-4"></div>
                 </div>
             </div>
         </section>
-
+ 
         <!-- 3. 成本與利潤 Tab -->
         <section id="tab-profit" class="tab-content hidden">
-            <div class="bg-white p-5 rounded-xl shadow border border-amber-200">
-                <div class="flex justify-between items-center mb-4 border-b border-amber-100 pb-2">
-                    <h2 class="text-lg font-bold text-amber-900 flex items-center space-x-2">
-                        <i data-lucide="badge-dollar-sign" class="w-5 h-5 text-amber-600"></i>
+            <div class="bg-white p-5 rounded-xl shadow border border-emerald-200">
+                <div class="flex justify-between items-center mb-4 border-b border-emerald-100 pb-2">
+                    <h2 class="text-lg font-bold text-emerald-900 flex items-center space-x-2">
+                        <i data-lucide="badge-dollar-sign" class="w-5 h-5 text-emerald-600"></i>
                         <span>單筆明細獲利分析</span>
                     </h2>
-                    <span class="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                    <span class="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
                         💡 成本依「單件成本 × 數量」自動計算總成本
                     </span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
-                            <tr class="bg-amber-100/70 text-amber-900 border-b border-amber-200">
+                            <tr class="bg-emerald-100/70 text-emerald-900 border-b border-emerald-200">
                                 <th class="p-3">買家</th>
                                 <th class="p-3">商品 (數量)</th>
                                 <th class="p-3">總售價</th>
@@ -216,41 +219,41 @@
                                 <th class="p-3">毛利率</th>
                             </tr>
                         </thead>
-                        <tbody id="profitTableBody" class="divide-y divide-amber-100"></tbody>
+                        <tbody id="profitTableBody" class="divide-y divide-emerald-100"></tbody>
                     </table>
                 </div>
             </div>
         </section>
-
+ 
         <!-- 4. 年月盈虧統計 Tab -->
         <section id="tab-analytics" class="tab-content hidden">
-            <div class="bg-white p-5 rounded-xl shadow border border-amber-200 mb-6">
+            <div class="bg-white p-5 rounded-xl shadow border border-emerald-200 mb-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                    <h2 class="text-lg font-bold text-amber-900 flex items-center space-x-2">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-amber-600"></i>
+                    <h2 class="text-lg font-bold text-emerald-900 flex items-center space-x-2">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-600"></i>
                         <span>盈虧趨勢圖表與金額明細</span>
                     </h2>
                     <div class="flex items-center space-x-2">
-                        <label class="text-sm font-medium text-amber-800">年份:</label>
-                        <select id="analyticsYearSelect" onchange="updateAnalytics()" class="border border-amber-300 rounded px-3 py-1 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
+                        <label class="text-sm font-medium text-emerald-800">年份:</label>
+                        <select id="analyticsYearSelect" onchange="updateAnalytics()" class="border border-emerald-300 rounded px-3 py-1 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></select>
                     </div>
                 </div>
                 <div class="relative w-full h-[320px] sm:h-[380px] mb-6">
                     <canvas id="profitChart"></canvas>
                 </div>
-                <div class="border-t border-amber-100 pt-4">
-                    <h3 class="text-sm font-bold text-amber-900 mb-3">各月份盈虧金額明細</h3>
+                <div class="border-t border-emerald-100 pt-4">
+                    <h3 class="text-sm font-bold text-emerald-900 mb-3">各月份盈虧金額明細</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3" id="monthlyDetailGrid"></div>
                 </div>
             </div>
         </section>
     </main>
-
+ 
     <!-- 新增/編輯 Modal 彈窗 -->
     <div id="formModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl border border-amber-200 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4 border-b border-amber-100 pb-2">
-                <h3 id="modalTitle" class="text-lg font-bold text-amber-900">新增訂單紀錄</h3>
+        <div class="bg-white rounded-xl shadow-xl border border-emerald-200 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b border-emerald-100 pb-2">
+                <h3 id="modalTitle" class="text-lg font-bold text-emerald-900">新增訂單紀錄</h3>
                 <button onclick="closeFormModal()" class="text-slate-400 hover:text-slate-600">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
@@ -259,62 +262,62 @@
             <form id="recordForm" onsubmit="saveRecord(event)" class="space-y-4">
                 <input type="hidden" id="recordId">
                 <div>
-                    <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">日期</label>
-                    <input type="date" id="inputDate" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    <label class="block text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1">日期</label>
+                    <input type="date" id="inputDate" required class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">
-                        人名 <span class="text-amber-600 font-normal">(可輸入多位，用逗號分隔)</span>
+                    <label class="block text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1">
+                        人名 <span class="text-emerald-600 font-normal">(可輸入多位，用逗號分隔)</span>
                     </label>
-                    <textarea id="inputPerson" rows="2" placeholder="張三, 李四" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                    <textarea id="inputPerson" rows="2" placeholder="張三, 李四" required class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div class="col-span-2">
-                        <label class="block text-xs font-bold text-amber-800 mb-1">商品名稱</label>
-                        <input type="text" id="inputProduct" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">商品名稱</label>
+                        <input type="text" id="inputProduct" required class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">訂購數量</label>
-                        <input type="number" id="inputQuantity" min="1" value="1" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">訂購數量</label>
+                        <input type="number" id="inputQuantity" min="1" value="1" required class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">單人單價</label>
-                        <input type="number" id="inputPrice" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                        <div id="modalTotalPreview" class="text-xs font-bold text-amber-700 mt-1">預估總售價：$0</div>
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">單人單價</label>
+                        <input type="number" id="inputPrice" min="0" required class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <div id="modalTotalPreview" class="text-xs font-bold text-emerald-700 mt-1">預估總售價：$0</div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">單件成本</label>
-                        <input type="number" id="inputCost" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">單件成本</label>
+                        <input type="number" id="inputCost" min="0" required class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                         <div id="modalCostPreview" class="text-xs font-bold text-slate-500 mt-1">總成本：$0</div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">已收金額</label>
-                        <input type="number" id="inputReceived" min="0" required class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">已收金額</label>
+                        <input type="number" id="inputReceived" min="0" required class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">包材費</label>
-                        <input type="number" id="inputPackagingCost" min="0" value="0" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">包材費</label>
+                        <input type="number" id="inputPackagingCost" min="0" value="0" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">郵寄運費</label>
-                        <input type="number" id="inputShippingCost" min="0" value="0" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">郵寄運費</label>
+                        <input type="number" id="inputShippingCost" min="0" value="0" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-amber-800 mb-1">小禮物</label>
-                    <input type="text" id="inputGift" placeholder="無 / 贈品名稱" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    <label class="block text-xs font-bold text-emerald-800 mb-1">小禮物</label>
+                    <input type="text" id="inputGift" placeholder="無 / 贈品名稱" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-amber-800 mb-1">商品圖片 (網址或上傳照片)</label>
+                    <label class="block text-xs font-bold text-emerald-800 mb-1">商品圖片 (網址或上傳照片)</label>
                     <div class="flex gap-2 mb-2">
-                        <input type="url" id="inputImageUrl" placeholder="https://example.com/image.jpg" class="flex-1 border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="url" id="inputImageUrl" placeholder="https://example.com/image.jpg" class="flex-1 border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                         <input type="file" id="inputImageFile" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
-                        <button type="button" onclick="document.getElementById('inputImageFile').click()" class="bg-amber-100 text-amber-800 hover:bg-amber-200 px-3 py-2 rounded-lg text-xs font-medium flex items-center space-x-1">
+                        <button type="button" onclick="document.getElementById('inputImageFile').click()" class="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-2 rounded-lg text-xs font-medium flex items-center space-x-1">
                             <i data-lucide="image" class="w-4 h-4"></i>
                             <span>上傳照片</span>
                         </button>
@@ -326,8 +329,8 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">商品位置</label>
-                        <select id="inputLocation" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-white">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">商品位置</label>
+                        <select id="inputLocation" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
                             <option value="代買中">代買中</option>
                             <option value="日本家中">日本家中</option>
                             <option value="國際物流中">國際物流中</option>
@@ -336,32 +339,32 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-amber-800 mb-1">是否訂購</label>
-                        <select id="inputOrdered" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-white">
+                        <label class="block text-xs font-bold text-emerald-800 mb-1">是否訂購</label>
+                        <select id="inputOrdered" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
                             <option value="false">未訂購</option>
                             <option value="true">已訂購</option>
                         </select>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-amber-800 mb-1">備註</label>
-                    <textarea id="inputNotes" rows="2" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none" placeholder="備註事項..."></textarea>
+                    <label class="block text-xs font-bold text-emerald-800 mb-1">備註</label>
+                    <textarea id="inputNotes" rows="2" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="備註事項..."></textarea>
                 </div>
                 
-                <div class="flex justify-end space-x-2 pt-3 border-t border-amber-100">
+                <div class="flex justify-end space-x-2 pt-3 border-t border-emerald-100">
                     <button type="button" onclick="closeFormModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">取消</button>
-                    <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium shadow">儲存</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium shadow">儲存</button>
                 </div>
             </form>
         </div>
     </div>
-
+ 
     <!-- 雲端設定 Modal -->
     <div id="apiModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl border border-amber-200 w-full max-w-md p-6">
-            <div class="flex justify-between items-center mb-4 border-b border-amber-100 pb-2">
-                <h3 class="text-lg font-bold text-amber-900 flex items-center space-x-2">
-                    <i data-lucide="cloud" class="w-5 h-5 text-amber-600"></i>
+        <div class="bg-white rounded-xl shadow-xl border border-emerald-200 w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-4 border-b border-emerald-100 pb-2">
+                <h3 class="text-lg font-bold text-emerald-900 flex items-center space-x-2">
+                    <i data-lucide="cloud" class="w-5 h-5 text-emerald-600"></i>
                     <span>設定 Google Apps Script API</span>
                 </h3>
                 <button onclick="closeApiModal()" class="text-slate-400 hover:text-slate-600">
@@ -370,28 +373,73 @@
             </div>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-amber-800 mb-1">Web App URL (/exec 網址)</label>
-                    <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border border-amber-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    <label class="block text-xs font-bold text-emerald-800 mb-1">Web App URL (/exec 網址)</label>
+                    <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border border-emerald-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
                 <div class="flex justify-between items-center pt-2">
                     <button onclick="clearApiUrl()" class="text-xs text-rose-600 hover:underline">斷開連線</button>
                     <div class="space-x-2">
                         <button onclick="closeApiModal()" class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-600">取消</button>
-                        <button onclick="saveApiUrl()" class="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-sm shadow hover:bg-amber-700">儲存並連結</button>
+                        <button onclick="saveApiUrl()" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm shadow hover:bg-emerald-700">儲存並連結</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- JavaScript 核心邏輯 -->
+ 
+    <!-- JavaScript 邏輯 -->
     <script>
         let records = JSON.parse(localStorage.getItem('rilakkuma_records')) || [];
         let stockData = JSON.parse(localStorage.getItem('rilakkuma_stock')) || {};
         let apiUrl = localStorage.getItem('rilakkuma_api_url') || '';
         let profitChartInstance = null;
         let currentBase64Image = '';
-
+ 
+ 
+        function normalizeRecord(record = {}) {
+            const quantity = Number(record.quantity) || 1;
+            const price = Number(record.price) || 0;
+            const received = Number(record.received) || 0;
+            return {
+                id: String(record.id || `local_${Date.now()}_${Math.random().toString(16).slice(2)}`),
+                date: record.date || new Date().toISOString().split('T')[0],
+                person: String(record.person || ''),
+                product: String(record.product || ''),
+                quantity,
+                price,
+                received,
+                unpaid: Math.max(0, price * quantity - received),
+                ordered: record.ordered === true || record.ordered === '已訂購' || record.ordered === 'TRUE' || record.ordered === 1,
+                gift: String(record.gift || '無'),
+                location: String(record.location || '代買中'),
+                imageUrl: String(record.imageUrl || record.image || ''),
+                notes: String(record.notes || ''),
+                cost: Number(record.cost) || 0,
+                packagingCost: Number(record.packagingCost) || 0,
+                shippingCost: Number(record.shippingCost) || 0,
+                shipped: record.shipped === true || record.location === '已寄出'
+            };
+        }
+ 
+        // 舊的本機資料也先補齊新欄位，避免畫面顯示 undefined 或再次同步錯位。
+        records = Array.isArray(records) ? records.map(normalizeRecord) : [];
+ 
+ 
+        function normalizeStockData(rawStock = {}) {
+            const normalized = {};
+            Object.entries(rawStock || {}).forEach(([name, value]) => {
+                const item = (value && typeof value === 'object') ? value : { initQty: value };
+                normalized[name] = {
+                    initQty: Number(item.initQty) || 0,
+                    remainQty: Number(item.remainQty) || 0,
+                    cost: Number(item.cost) || 0
+                };
+            });
+            return normalized;
+        }
+ 
+        stockData = normalizeStockData(stockData);
+ 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
@@ -402,12 +450,13 @@
             
             if (apiUrl) {
                 fetchData();
+                // 雲端雙向同步：每 10 秒自動拉取一次最新雲端資料
                 setInterval(fetchData, 10000);
             }
             renderAll();
         });
-
-        // 雲端資料同步邏輯
+ 
+        // 雲端雙向同步抓取邏輯
         async function fetchData() {
             if (!apiUrl) return;
             const statusEl = document.getElementById('syncStatus');
@@ -417,15 +466,12 @@
                 const data = await response.json();
                 
                 if (data.records && Array.isArray(data.records)) {
-                    records = data.records;
+                    records = data.records.map(normalizeRecord);
                 }
                 if (data.stock) {
-                    stockData = {};
-                    Object.keys(data.stock).forEach(k => {
-                        stockData[k] = (typeof data.stock[k] === 'object') ? data.stock[k].initQty : data.stock[k];
-                    });
+                    stockData = normalizeStockData(data.stock);
                 }
-                saveData(false);
+                saveData(false); // 不重複發送 POST
                 if (statusEl) {
                     statusEl.innerText = '已與雲端同步 (' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ')';
                     statusEl.classList.remove('hidden');
@@ -435,8 +481,8 @@
                 if (statusEl) statusEl.innerText = '同步失敗';
             }
         }
-
-        // CSV 匯入解析
+ 
+        // CSV 大量匯入解析
         function handleCSVImport(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -464,7 +510,7 @@
                     result.push(currentCell.trim());
                     return result;
                 }
-
+ 
                 const headers = parseCSVRow(lines[0]);
                 const getIndex = (names) => names.reduce((acc, name) => acc !== -1 ? acc : headers.findIndex(h => h.includes(name)), -1);
                 
@@ -478,10 +524,10 @@
                 const pkgIdx = getIndex(['包材費', '包材']);
                 const shipIdx = getIndex(['運費', '郵寄運費']);
                 const orderedIdx = getIndex(['訂購狀態', '訂購']);
-                const giftIdx = getIndex(['小禮物', '贈品']);
                 const locationIdx = getIndex(['商品位置', '位置']);
-                const notesIdx = getIndex(['備註', 'Notes']);
+                const giftIdx = getIndex(['小禮物', '贈品']);
                 const imgIdx = getIndex(['圖片', 'Image']);
+                const notesIdx = getIndex(['備註', 'Notes']);
                 
                 let importCount = 0;
                 const timestamp = new Date().getTime();
@@ -509,8 +555,8 @@
                         ordered: isOrdered,
                         gift: giftIdx >= 0 ? (row[giftIdx] || '無') : '無',
                         location: locationIdx >= 0 ? (row[locationIdx] || '代買中') : '代買中',
-                        notes: notesIdx >= 0 ? row[notesIdx] : '',
-                        imageUrl: imgIdx >= 0 ? row[imgIdx] : ''
+                        imageUrl: imgIdx >= 0 ? row[imgIdx] : '',
+                        notes: notesIdx >= 0 ? row[notesIdx] : ''
                     };
                     records.push(newRec);
                     importCount++;
@@ -522,7 +568,7 @@
             };
             reader.readAsText(file, 'UTF-8');
         }
-
+ 
         function calculateModalTotal() {
             const qty = Number(document.getElementById('inputQuantity').value) || 0;
             const price = Number(document.getElementById('inputPrice').value) || 0;
@@ -531,148 +577,100 @@
             document.getElementById('modalTotalPreview').innerText = `預估總售價：$${qty * price}`;
             document.getElementById('modalCostPreview').innerText = `總成本：$${qty * cost}`;
         }
-
+ 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-amber-600', 'text-white');
-                btn.classList.add('text-amber-800', 'hover:bg-amber-100');
+                btn.classList.remove('bg-emerald-600', 'text-white');
+                btn.classList.add('text-emerald-800', 'hover:bg-emerald-100');
             });
             document.getElementById(tabId).classList.remove('hidden');
             const activeBtn = document.getElementById(`btn-${tabId}`);
-            activeBtn.classList.add('bg-amber-600', 'text-white');
-            activeBtn.classList.remove('text-amber-800', 'hover:bg-amber-100');
+            activeBtn.classList.add('bg-emerald-600', 'text-white');
+            activeBtn.classList.remove('text-emerald-800', 'hover:bg-emerald-100');
             if (tabId === 'tab-analytics') updateAnalytics();
         }
-
+ 
         function saveData(triggerRender = true) {
             localStorage.setItem('rilakkuma_records', JSON.stringify(records));
             localStorage.setItem('rilakkuma_stock', JSON.stringify(stockData));
             if (triggerRender) renderAll();
         }
-
+ 
         function renderAll() {
             renderRecords();
             renderInventory();
             renderProfit();
             lucide.createIcons();
         }
-
-        // 重點修正：對齊 14 欄資料與渲染位置
+ 
+ 
+ 
+        function escapeAttribute(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
         function renderRecords() {
             const tbody = document.getElementById('recordsTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase().trim();
             const filterOrdered = document.getElementById('filterOrdered').value;
             const filterLocation = document.getElementById('filterLocation').value;
             tbody.innerHTML = '';
-            
             const selectAllCb = document.getElementById('selectAllCheckbox');
             if (selectAllCb) selectAllCb.checked = false;
             updateBatchDeleteBtn();
-            
+ 
             let totalSum = 0;
             let receivedSum = 0;
             let unpaidSum = 0;
-            
             const filtered = records.filter(r => {
-                const personStr = String(r.person || '').toLowerCase();
-                const productStr = String(r.product || '').toLowerCase();
-                const matchesSearch = !search || personStr.includes(search) || productStr.includes(search);
-                const matchesOrdered = (filterOrdered === 'ALL') || 
-                    (filterOrdered === 'true' && (r.ordered === true || r.ordered === '已訂購')) ||
-                    (filterOrdered === 'false' && (!r.ordered || r.ordered === '未訂購'));
-                const matchesLocation = (filterLocation === 'ALL') || (r.location === filterLocation);
+                const matchesSearch = !search || String(r.person || '').toLowerCase().includes(search) || String(r.product || '').toLowerCase().includes(search);
+                const matchesOrdered = filterOrdered === 'ALL' ||
+                    (filterOrdered === 'true' && r.ordered === true) ||
+                    (filterOrdered === 'false' && r.ordered !== true);
+                const matchesLocation = filterLocation === 'ALL' || r.location === filterLocation;
                 return matchesSearch && matchesOrdered && matchesLocation;
             });
-
+ 
             filtered.forEach(r => {
                 const qty = Number(r.quantity) || 1;
                 const unitPrice = Number(r.price) || 0;
                 const totalPrice = unitPrice * qty;
                 const received = Number(r.received) || 0;
-                const unpaid = totalPrice - received;
-                
-                // 相容性處理：判斷圖片欄位 (防止 Base64 錯當成備註)
-                let imgUrl = r.imageUrl || r.image || '';
-                let notesContent = r.notes || '';
-                
-                // 防錯過濾：若 notes 誤裝了 base64 圖片，將其清洗還原
-                if (typeof notesContent === 'string' && notesContent.startsWith('data:image')) {
-                    if (!imgUrl) imgUrl = notesContent;
-                    notesContent = '';
-                }
-
-                const isOrdered = (r.ordered === true || r.ordered === '已訂購');
-                
+                const unpaid = Math.max(0, totalPrice - received);
+                const imgUrl = r.imageUrl || '';
                 totalSum += totalPrice;
                 receivedSum += received;
                 unpaidSum += unpaid;
-                
+ 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-amber-50/60 transition";
-                
-                // 14 欄精確對齊：
-                // 1.勾選框 | 2.圖片 | 3.日期 | 4.人名 | 5.商品名稱 | 6.訂購數量 | 7.售價/單價 
-                // 8.已收金額 | 9.未收金額 | 10.訂購狀態 | 11.小禮物 | 12.商品位置 | 13.備註 | 14.操作
+                tr.className = 'hover:bg-emerald-50/60 transition align-top';
                 tr.innerHTML = `
-                    <td class="p-3 text-center">
-                        <input type="checkbox" value="${r.id}" onchange="updateBatchDeleteBtn()" class="record-checkbox w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
-                    </td>
-                    <td class="p-2 text-center">
-                        ${imgUrl ? `<img src="${imgUrl}" class="w-10 h-10 object-cover rounded-md mx-auto border cursor-pointer" onclick="window.open('${imgUrl}')">` : `<div class="w-10 h-10 bg-slate-100 rounded-md mx-auto flex items-center justify-center text-slate-300"><i data-lucide="image" class="w-5 h-5"></i></div>`}
-                    </td>
-                    <td class="p-3 text-slate-600 whitespace-nowrap">${r.date || ''}</td>
-                    <td class="p-3 font-medium text-slate-800">${r.person || ''}</td>
-                    <td class="p-3 text-slate-700">${r.product || ''}</td>
-                    <td class="p-3 text-center">
-                        <input type="number" min="1" value="${qty}" 
-                            onchange="updateRecordField('${r.id}', 'quantity', this.value)" 
-                            class="w-16 text-center font-bold text-amber-900 border border-amber-300 rounded px-1 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
-                            title="修改數量">
-                    </td>
-                    <td class="p-3">
-                        <div class="font-bold text-slate-800">$${totalPrice}</div>
-                        <div class="flex items-center space-x-1 mt-0.5">
-                            <span class="text-xs text-slate-400">單價$</span>
-                            <input type="number" min="0" value="${unitPrice}" 
-                                onchange="updateRecordField('${r.id}', 'price', this.value)" 
-                                class="w-20 border border-amber-300 rounded px-1.5 py-0.5 text-xs bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
-                                title="修改單價">
-                        </div>
-                    </td>
-                    <td class="p-3 text-emerald-600 font-medium">$${received}</td>
-                    <td class="p-3 ${unpaid > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'}">$${unpaid}</td>
-                    <td class="p-3 text-center">
-                        <select onchange="updateOrderedSelect('${r.id}', this.value)" 
-                            class="border text-xs rounded font-medium px-2 py-1 outline-none focus:ring-2 focus:ring-amber-500 ${isOrdered ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-amber-50 text-amber-800 border-amber-300'}">
-                            <option value="false" ${!isOrdered ? 'selected' : ''}>未訂購</option>
-                            <option value="true" ${isOrdered ? 'selected' : ''}>已訂購</option>
-                        </select>
-                    </td>
-                    <td class="p-3 text-center text-xs text-slate-600">${r.gift || '無'}</td>
-                    <td class="p-3 text-center">
-                        <select onchange="updateRecordField('${r.id}', 'location', this.value)" 
-                            class="border text-xs rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-500 ${getLocationBadgeClass(r.location)}">
-                            <option value="代買中" ${r.location === '代買中' ? 'selected' : ''}>代買中</option>
-                            <option value="日本家中" ${r.location === '日本家中' ? 'selected' : ''}>日本家中</option>
-                            <option value="國際物流中" ${r.location === '國際物流中' ? 'selected' : ''}>國際物流中</option>
-                            <option value="台灣家中" ${r.location === '台灣家中' ? 'selected' : ''}>台灣家中</option>
-                            <option value="已寄出" ${r.location === '已寄出' ? 'selected' : ''}>已寄出</option>
-                        </select>
-                    </td>
-                    <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${notesContent}">${notesContent || '-'}</td>
-                    <td class="p-3 text-center space-x-1 whitespace-nowrap">
-                        <button onclick="editRecord('${r.id}')" class="text-amber-600 hover:text-amber-800 p-1"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                        <button onclick="deleteRecord('${r.id}')" class="text-rose-500 hover:text-rose-700 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                `;
+                    <td class="p-2 text-center"><input type="checkbox" value="${r.id}" onchange="updateBatchDeleteBtn()" class="record-checkbox w-4 h-4 rounded border-emerald-300 text-emerald-600"></td>
+                    <td class="p-2 text-center">${imgUrl ? `<img src="${imgUrl}" class="w-10 h-10 object-cover rounded-md mx-auto border cursor-pointer" onclick="editRecord('${r.id}')">` : `<button onclick="editRecord('${r.id}')" class="w-10 h-10 bg-stone-100 rounded-md mx-auto flex items-center justify-center text-stone-400"><i data-lucide="image-plus" class="w-5 h-5"></i></button>`}</td>
+                    <td class="p-2"><input type="date" value="${r.date || ''}" onchange="updateRecordField('${r.id}','date',this.value)" class="w-32 border border-emerald-200 rounded p-1 text-xs"></td>
+                    <td class="p-2"><input type="text" value="${escapeAttribute(r.person)}" onchange="updateRecordField('${r.id}','person',this.value)" class="w-28 border border-emerald-200 rounded p-1 text-sm"></td>
+                    <td class="p-2"><input type="text" value="${escapeAttribute(r.product)}" onchange="updateRecordField('${r.id}','product',this.value)" class="w-36 border border-emerald-200 rounded p-1 text-sm"></td>
+                    <td class="p-2 text-center"><input type="number" min="1" value="${qty}" onchange="updateRecordField('${r.id}','quantity',this.value)" class="w-16 text-center border border-emerald-300 rounded p-1"></td>
+                    <td class="p-2"><div class="font-bold text-emerald-800">總計 $${totalPrice}</div><input type="number" min="0" value="${unitPrice}" onchange="updateRecordField('${r.id}','price',this.value)" class="w-20 border border-emerald-300 rounded p-1 text-xs" title="單件售價"></td>
+                    <td class="p-2"><input type="number" min="0" value="${received}" onchange="updateRecordField('${r.id}','received',this.value)" class="w-20 border border-emerald-300 rounded p-1 text-sm text-emerald-700"></td>
+                    <td class="p-2 font-semibold ${unpaid > 0 ? 'text-rose-600' : 'text-stone-400'}">$${unpaid}</td>
+                    <td class="p-2 text-center"><select onchange="updateRecordField('${r.id}','ordered',this.value)" class="border text-xs rounded px-2 py-1 ${r.ordered ? 'bg-emerald-50 text-emerald-800' : 'bg-stone-50 text-stone-600'}"><option value="false" ${!r.ordered ? 'selected' : ''}>未訂購</option><option value="true" ${r.ordered ? 'selected' : ''}>已訂購</option></select></td>
+                    <td class="p-2"><input type="text" value="${escapeAttribute(r.gift || '無')}" onchange="updateRecordField('${r.id}','gift',this.value)" class="w-20 border border-emerald-200 rounded p-1 text-xs"></td>
+                    <td class="p-2"><select onchange="updateRecordField('${r.id}','location',this.value)" class="border text-xs rounded px-2 py-1 ${getLocationBadgeClass(r.location)}"><option value="代買中" ${r.location === '代買中' ? 'selected' : ''}>代買中</option><option value="日本家中" ${r.location === '日本家中' ? 'selected' : ''}>日本家中</option><option value="國際物流中" ${r.location === '國際物流中' ? 'selected' : ''}>國際物流中</option><option value="台灣家中" ${r.location === '台灣家中' ? 'selected' : ''}>台灣家中</option><option value="已寄出" ${r.location === '已寄出' ? 'selected' : ''}>已寄出</option></select></td>
+                    <td class="p-2"><input type="text" value="${escapeAttribute(r.notes || '')}" onchange="updateRecordField('${r.id}','notes',this.value)" class="w-36 border border-emerald-200 rounded p-1 text-xs"></td>
+                    <td class="p-2 text-center whitespace-nowrap"><button onclick="editRecord('${r.id}')" class="text-emerald-600 p-1" title="完整編輯與圖片"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteRecord('${r.id}')" class="text-rose-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             document.getElementById('statTotalPrice').innerText = `$${totalSum}`;
             document.getElementById('statReceivedPrice').innerText = `$${receivedSum}`;
             document.getElementById('statUnpaidPrice').innerText = `$${unpaidSum}`;
+            lucide.createIcons();
         }
-
+ 
         function updateOrderedSelect(id, valStr) {
             const r = records.find(rec => String(rec.id) === String(id));
             if (!r) return;
@@ -680,23 +678,23 @@
             saveData();
             syncToCloud('updateField', { id: id, field: 'ordered', value: r.ordered });
         }
-
+ 
         function getLocationBadgeClass(loc) {
             switch(loc) {
                 case '已寄出': return 'bg-emerald-50 text-emerald-800 border-emerald-300';
                 case '台灣家中': return 'bg-blue-50 text-blue-800 border-blue-300';
                 case '國際物流中': return 'bg-indigo-50 text-indigo-800 border-indigo-300';
                 case '日本家中': return 'bg-purple-50 text-purple-800 border-purple-300';
-                default: return 'bg-amber-50 text-amber-800 border-amber-300';
+                default: return 'bg-emerald-50 text-emerald-800 border-emerald-300';
             }
         }
-
+ 
         function toggleSelectAll(master) {
             const checkboxes = document.querySelectorAll('.record-checkbox');
             checkboxes.forEach(cb => cb.checked = master.checked);
             updateBatchDeleteBtn();
         }
-
+ 
         function updateBatchDeleteBtn() {
             const selected = document.querySelectorAll('.record-checkbox:checked');
             const btn = document.getElementById('batchDeleteBtn');
@@ -709,7 +707,7 @@
                 btn.classList.add('hidden');
             }
         }
-
+ 
         async function batchDeleteRecords() {
             const selectedCheckboxes = document.querySelectorAll('.record-checkbox:checked');
             const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
@@ -724,76 +722,38 @@
                 updateBatchDeleteBtn();
             }
         }
-
+ 
         function renderInventory() {
             const list = document.getElementById('inventoryList');
             const progress = document.getElementById('shippingProgress');
             list.innerHTML = '';
-            progress.innerHTML = '';
-            
-            const sales = {};
+            const sold = {};
             records.forEach(r => {
-                if (r.product) {
-                    const q = Number(r.quantity) || 1;
-                    if (!sales[r.product]) sales[r.product] = { total: 0, shipped: 0 };
-                    sales[r.product].total += q;
-                    if (r.shipped || r.location === '已寄出') sales[r.product].shipped += q;
-                }
+                const name = String(r.product || '').trim();
+                if (name) sold[name] = (sold[name] || 0) + (Number(r.quantity) || 1);
             });
-            
-            const allProducts = new Set([...Object.keys(stockData), ...Object.keys(sales)]);
-            if (allProducts.size === 0) {
-                list.innerHTML = `<p class="text-sm text-slate-400">目前尚無庫存資料，請由上方新增進貨。</p>`;
-            } else {
-                allProducts.forEach(prod => {
-                    const totalIn = stockData[prod] || 0;
-                    const soldCount = sales[prod] ? sales[prod].total : 0;
-                    const currentStock = totalIn - soldCount;
-                    const safeProd = String(prod).replace(/'/g, "\\'");
-                    
-                    list.innerHTML += `
-                        <div class="flex justify-between items-center p-3 bg-amber-50/50 rounded-lg border border-amber-100">
-                            <div>
-                                <span class="font-medium text-amber-900 block">${prod}</span>
-                                <span class="text-xs text-slate-500">進貨總量: ${totalIn} | 已售出: ${soldCount}</span>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <div class="text-right">
-                                    <span class="text-xs text-slate-400 block">剩餘庫存</span>
-                                    <span class="font-bold text-lg ${currentStock < 0 ? 'text-rose-600' : 'text-amber-700'}">${currentStock} 件</span>
-                                </div>
-                                <div class="flex items-center space-x-1 border-l border-amber-200 pl-2">
-                                    <button onclick="editStock('${safeProd}')" title="修改進貨總量" class="text-amber-600 hover:text-amber-800 p-1">
-                                        <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                    </button>
-                                    <button onclick="deleteStock('${safeProd}')" title="刪除庫存項目" class="text-rose-500 hover:text-rose-700 p-1">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
+            const allProducts = new Set([...Object.keys(stockData), ...Object.keys(sold)]);
+            allProducts.forEach(productName => {
+                const item = stockData[productName] || { initQty: 0, remainQty: -(sold[productName] || 0), cost: 0 };
+                stockData[productName] = item;
+                const remaining = (Number(item.initQty) || 0) - (sold[productName] || 0);
+                const safeName = encodeURIComponent(productName);
+                list.innerHTML += `<div class="p-3 bg-emerald-50/60 rounded-lg border border-emerald-100 space-y-2">
+                    <div class="flex gap-2 items-center"><input type="text" value="${escapeAttribute(productName)}" onchange="renameStockItem('${safeName}',this.value)" class="font-medium text-emerald-900 border border-emerald-200 rounded p-1 flex-1"><button onclick="deleteStock(decodeURIComponent('${safeName}'))" class="text-rose-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <label class="text-xs text-stone-500">初始庫存<input type="number" min="0" value="${item.initQty}" onchange="updateStockInline('${safeName}','initQty',this.value)" class="mt-1 w-full border border-emerald-200 rounded p-1 text-center text-stone-800"></label>
+                        <label class="text-xs text-stone-500">目前庫存<input type="number" value="${remaining}" readonly class="mt-1 w-full border border-stone-200 bg-stone-100 rounded p-1 text-center font-bold ${remaining < 0 ? 'text-rose-600' : 'text-emerald-700'}"></label>
+                        <label class="text-xs text-stone-500">單件成本<input type="number" min="0" value="${item.cost || 0}" onchange="updateStockInline('${safeName}','cost',this.value)" class="mt-1 w-full border border-emerald-200 rounded p-1 text-center text-stone-800"></label>
+                    </div><div class="text-xs text-stone-500">訂單數量：${sold[productName] || 0}；目前庫存會自動以「初始庫存－訂單數量」計算。</div></div>`;
+            });
+            if (allProducts.size === 0) list.innerHTML = '<p class="text-sm text-stone-400">尚無庫存資料。</p>';
             const totalOrders = records.length;
-            const shippedOrders = records.filter(r => r.shipped || r.location === '已寄出').length;
-            const pct = totalOrders > 0 ? Math.round((shippedOrders / totalOrders) * 100) : 0;
-            
-            progress.innerHTML = `
-                <div>
-                    <div class="flex justify-between text-sm font-medium mb-1">
-                        <span>整體出貨進度</span>
-                        <span>${shippedOrders} / ${totalOrders} (${pct}%)</span>
-                    </div>
-                    <div class="w-full bg-slate-200 rounded-full h-3">
-                        <div class="bg-amber-600 h-3 rounded-full transition-all duration-300" style="width: ${pct}%"></div>
-                    </div>
-                </div>
-            `;
+            const shippedOrders = records.filter(r => r.location === '已寄出').length;
+            const pct = totalOrders ? Math.round(shippedOrders / totalOrders * 100) : 0;
+            progress.innerHTML = `<div><div class="flex justify-between text-sm font-medium mb-1"><span>整體出貨進度</span><span>${shippedOrders} / ${totalOrders} (${pct}%)</span></div><div class="w-full bg-stone-200 rounded-full h-3"><div class="bg-emerald-600 h-3 rounded-full" style="width:${pct}%"></div></div></div>`;
             lucide.createIcons();
         }
-
+ 
         function renderProfit() {
             const tbody = document.getElementById('profitTableBody');
             tbody.innerHTML = '';
@@ -812,7 +772,7 @@
                 const margin = totalPrice > 0 ? ((profit / totalPrice) * 100).toFixed(1) : '0.0';
                 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-amber-50/60 transition";
+                tr.className = "hover:bg-emerald-50/60 transition";
                 tr.innerHTML = `
                     <td class="p-3 text-slate-800 font-medium">${r.person || ''}</td>
                     <td class="p-3 text-slate-700">${r.product || ''} (x${qty})</td>
@@ -823,7 +783,7 @@
                             <span class="text-xs text-slate-400">單件$</span>
                             <input type="number" min="0" value="${unitCost}" 
                                 onchange="updateRecordField('${r.id}', 'cost', this.value)" 
-                                class="w-20 border border-amber-300 rounded px-1.5 py-0.5 text-xs bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
+                                class="w-20 border border-emerald-300 rounded px-1.5 py-0.5 text-xs bg-white focus:ring-2 focus:ring-emerald-500 outline-none" 
                                 title="單件商品成本">
                         </div>
                     </td>
@@ -832,7 +792,7 @@
                             <span class="text-xs text-slate-400">$</span>
                             <input type="number" min="0" value="${pkgCost}" 
                                 onchange="updateRecordField('${r.id}', 'packagingCost', this.value)" 
-                                class="w-20 border border-amber-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
+                                class="w-20 border border-emerald-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none" 
                                 title="包材費">
                         </div>
                     </td>
@@ -841,7 +801,7 @@
                             <span class="text-xs text-slate-400">$</span>
                             <input type="number" min="0" value="${shipCost}" 
                                 onchange="updateRecordField('${r.id}', 'shippingCost', this.value)" 
-                                class="w-20 border border-amber-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
+                                class="w-20 border border-emerald-300 rounded px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none" 
                                 title="郵寄運費">
                         </div>
                     </td>
@@ -851,22 +811,24 @@
                 tbody.appendChild(tr);
             });
         }
-
+ 
         function updateRecordField(id, field, value) {
             const r = records.find(rec => String(rec.id) === String(id));
             if (!r) return;
-            
-            if (field === 'location') {
-                r.location = value;
-                r.shipped = (value === '已寄出');
-                syncToCloud('updateField', { id: id, field: 'location', value: value });
+            const numericFields = ['quantity', 'price', 'cost', 'received', 'packagingCost', 'shippingCost'];
+            if (numericFields.includes(field)) {
+                r[field] = field === 'quantity' ? Math.max(1, Number(value) || 1) : Math.max(0, Number(value) || 0);
+            } else if (field === 'ordered') {
+                r.ordered = value === true || value === 'true';
             } else {
-                r[field] = Number(value) || 0;
-                syncToCloud('save', r);
+                r[field] = value;
             }
+            r.shipped = r.location === '已寄出';
+            r.unpaid = Math.max(0, (Number(r.price) || 0) * (Number(r.quantity) || 1) - (Number(r.received) || 0));
             saveData();
+            syncToCloud('save', r).then(fetchData);
         }
-
+ 
         function updateAnalytics() {
             const yearSelect = document.getElementById('analyticsYearSelect');
             const years = [...new Set(records.map(r => (r.date || '').split('-')[0]))].filter(Boolean);
@@ -888,7 +850,7 @@
                     }
                 }
             });
-
+ 
             const ctx = document.getElementById('profitChart').getContext('2d');
             if (profitChartInstance) profitChartInstance.destroy();
             profitChartInstance = new Chart(ctx, {
@@ -909,7 +871,7 @@
                     scales: { y: { beginAtZero: true } }
                 }
             });
-
+ 
             const grid = document.getElementById('monthlyDetailGrid');
             grid.innerHTML = '';
             monthlyProfit.forEach((val, idx) => {
@@ -924,13 +886,13 @@
                 `;
             });
         }
-
+ 
         function openFormModal(isEdit = false) {
             document.getElementById('modalTitle').innerText = isEdit ? '編輯訂單紀錄' : '新增訂單紀錄';
             document.getElementById('formModal').classList.remove('hidden');
             calculateModalTotal();
         }
-
+ 
         function closeFormModal() {
             document.getElementById('formModal').classList.add('hidden');
             document.getElementById('recordForm').reset();
@@ -938,7 +900,7 @@
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
             removeImage();
         }
-
+ 
         function saveRecord(e) {
             e.preventDefault();
             const editId = document.getElementById('recordId').value;
@@ -958,7 +920,7 @@
             
             const imageUrl = currentBase64Image || document.getElementById('inputImageUrl').value.trim();
             const people = rawPersonInput.split(/[,，\n、]+/).map(p => p.trim()).filter(Boolean);
-
+ 
             if (editId) {
                 const existingIndex = records.findIndex(r => String(r.id) === String(editId));
                 const oldRecord = existingIndex > -1 ? records[existingIndex] : {};
@@ -987,7 +949,7 @@
             saveData();
             closeFormModal();
         }
-
+ 
         function editRecord(id) {
             const r = records.find(rec => String(rec.id) === String(id));
             if (!r) return;
@@ -1017,7 +979,7 @@
             }
             openFormModal(true);
         }
-
+ 
         function deleteRecord(id) {
             if (confirm('確定要刪除這筆紀錄嗎？')) {
                 records = records.filter(r => String(r.id) !== String(id));
@@ -1025,7 +987,7 @@
                 syncToCloud('delete', { id });
             }
         }
-
+ 
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if (file) {
@@ -1049,85 +1011,95 @@
                 reader.readAsDataURL(file);
             }
         }
-
+ 
         function showImagePreview(url) {
             const img = document.getElementById('imagePreview');
             const container = document.getElementById('imagePreviewContainer');
             img.src = url;
             container.classList.remove('hidden');
         }
-
+ 
         function removeImage() {
             currentBase64Image = '';
             document.getElementById('inputImageUrl').value = '';
             document.getElementById('inputImageFile').value = '';
             document.getElementById('imagePreviewContainer').classList.add('hidden');
         }
-
+ 
         async function addStock(e) {
             e.preventDefault();
-            const pName = document.getElementById('stockProductName').value.trim();
-            const qty = Number(document.getElementById('stockQty').value) || 0;
-            const cost = Number(document.getElementById('stockCost').value) || 0;
-            if (pName && qty > 0) {
-                stockData[pName] = (stockData[pName] || 0) + qty;
-                saveData();
-                if (apiUrl) await syncToCloud('updateStock', { productName: pName, qty: qty, cost: cost });
-                document.getElementById('stockProductName').value = '';
-                document.getElementById('stockQty').value = '';
-                document.getElementById('stockCost').value = '';
-                alert(`已同步【${pName}】進貨數量 ${qty} 到雲端庫存`);
-            }
+            const productName = document.getElementById('stockProductName').value.trim();
+            const quantity = Math.max(0, Number(document.getElementById('stockQty').value) || 0);
+            const cost = Math.max(0, Number(document.getElementById('stockCost').value) || 0);
+            if (!productName) return;
+            stockData[productName] = { initQty: quantity, remainQty: quantity, cost };
+            saveData();
+            await syncToCloud('updateStock', { productName, qty: quantity, cost });
+            await fetchData();
+            e.target.reset();
         }
-
-        async function editStock(pName) {
-            const currentQty = stockData[pName] || 0;
-            const newQtyStr = prompt(`請輸入【${pName}】的新進貨總量：`, currentQty);
-            if (newQtyStr !== null) {
-                const newQty = Number(newQtyStr);
-                if (!isNaN(newQty) && newQty >= 0) {
-                    stockData[pName] = newQty;
-                    saveData();
-                    if (apiUrl) await syncToCloud('updateStock', { productName: pName, qty: newQty });
-                    alert(`【${pName}】的進貨總量已更新為 ${newQty}`);
-                } else {
-                    alert('請輸入有效的數字！');
-                }
-            }
+ 
+        async function updateStockInline(encodedName, field, value) {
+            const productName = decodeURIComponent(encodedName);
+            const item = stockData[productName] || { initQty: 0, remainQty: 0, cost: 0 };
+            item[field] = Math.max(0, Number(value) || 0);
+            stockData[productName] = item;
+            saveData();
+            await syncToCloud('updateStock', { productName, qty: item.initQty, cost: item.cost });
+            await fetchData();
         }
-
-        async function deleteStock(pName) {
-            if (confirm(`確定要刪除【${pName}】的庫存紀錄嗎？`)) {
-                delete stockData[pName];
-                saveData();
-                if (apiUrl) await syncToCloud('deleteStock', { productName: pName });
-                alert(`已刪除【${pName}】的庫存紀錄`);
-            }
+ 
+        async function deleteStock(productName) {
+            if (!confirm(`確定要刪除【${productName}】的庫存紀錄嗎？`)) return;
+            delete stockData[productName];
+            saveData();
+            await syncToCloud('deleteStock', { productName });
+            await fetchData();
         }
-
+ 
+        async function renameStockItem(encodedOldName, newProductName) {
+            const oldProductName = decodeURIComponent(encodedOldName);
+            newProductName = String(newProductName || '').trim();
+            if (!newProductName || oldProductName === newProductName) return renderInventory();
+            if (stockData[newProductName]) return alert('已有同名庫存商品');
+            stockData[newProductName] = stockData[oldProductName];
+            delete stockData[oldProductName];
+            saveData();
+            await syncToCloud('renameStock', { oldProductName, newProductName });
+            await fetchData();
+        }
+ 
         async function syncToCloud(action, payloadData) {
-            if (!apiUrl) return;
+            if (!apiUrl) return { result: 'offline' };
             try {
                 const payload = { action: action, ...payloadData };
-                await fetch(apiUrl, {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
+                const result = await response.json();
+                if (!response.ok || result.result === 'error') {
+                    throw new Error(result.message || `HTTP ${response.status}`);
+                }
+                return result;
             } catch (err) {
                 console.error('雲端同步失敗', err);
+                const statusEl = document.getElementById('syncStatus');
+                if (statusEl) statusEl.innerText = '同步失敗：' + err.message;
+                return { result: 'error', message: err.message };
             }
         }
-
+ 
         function openApiModal() {
             document.getElementById('apiUrlInput').value = apiUrl;
             document.getElementById('apiModal').classList.remove('hidden');
         }
-
+ 
         function closeApiModal() {
             document.getElementById('apiModal').classList.add('hidden');
         }
-
+ 
         function saveApiUrl() {
             apiUrl = document.getElementById('apiUrlInput').value.trim();
             localStorage.setItem('rilakkuma_api_url', apiUrl);
@@ -1137,7 +1109,7 @@
                 setInterval(fetchData, 10000);
             }
         }
-
+ 
         function clearApiUrl() {
             apiUrl = '';
             localStorage.removeItem('rilakkuma_api_url');
@@ -1147,3 +1119,4 @@
     </script>
 </body>
 </html>
+
