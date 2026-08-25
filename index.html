@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -388,6 +388,13 @@
     </div>
  
     <!-- JavaScript 邏輯 -->
+    <!-- 商品圖片放大燈箱 -->
+    <div id="imageViewerModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4" onclick="if (event.target === this) closeImageViewer()">
+        <button type="button" onclick="closeImageViewer()" class="absolute right-4 top-4 sm:right-7 sm:top-7 rounded-full bg-white/90 p-2.5 text-slate-700 shadow-lg transition hover:bg-white hover:text-emerald-700" aria-label="關閉圖片">
+            <i data-lucide="x" class="h-6 w-6"></i>
+        </button>
+        <img id="imageViewerContent" src="" alt="放大的商品圖片" class="max-h-[88vh] max-w-[92vw] rounded-xl bg-white object-contain shadow-2xl ring-1 ring-white/20">
+    </div>
     <script>
         let records = JSON.parse(localStorage.getItem('rilakkuma_records')) || [];
         let stockData = JSON.parse(localStorage.getItem('rilakkuma_stock')) || {};
@@ -606,6 +613,29 @@
  
  
  
+        function openImageViewer(imageUrl) {
+            if (!imageUrl) return;
+            const modal = document.getElementById('imageViewerModal');
+            const image = document.getElementById('imageViewerContent');
+            image.src = imageUrl;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+            lucide.createIcons();
+        }
+ 
+        function closeImageViewer() {
+            const modal = document.getElementById('imageViewerModal');
+            const image = document.getElementById('imageViewerContent');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            image.src = '';
+            document.body.classList.remove('overflow-hidden');
+        }
+ 
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeImageViewer();
+        });
         function escapeAttribute(value) {
             return String(value ?? '')
                 .replace(/&/g, '&amp;')
@@ -650,7 +680,7 @@
                 tr.className = 'hover:bg-emerald-50/60 transition align-top';
                 tr.innerHTML = `
                     <td class="p-2 text-center"><input type="checkbox" value="${r.id}" onchange="updateBatchDeleteBtn()" class="record-checkbox w-4 h-4 rounded border-emerald-300 text-emerald-600"></td>
-                    <td class="p-2 text-center">${imgUrl ? `<img src="${imgUrl}" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg mx-auto border border-emerald-200 shadow-sm cursor-pointer" onclick="editRecord('${r.id}')">` : `<button onclick="editRecord('${r.id}')" class="w-16 h-16 sm:w-20 sm:h-20 bg-stone-100 rounded-lg mx-auto flex items-center justify-center text-stone-400 border border-stone-200"><i data-lucide="image-plus" class="w-5 h-5"></i></button>`}</td>
+                    <td class="p-2 text-center">${imgUrl ? `<img src="${imgUrl}" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg mx-auto border border-emerald-200 shadow-sm cursor-pointer" onclick="openImageViewer(this.src)" title="點擊放大圖片">` : `<button onclick="editRecord('${r.id}')" class="w-16 h-16 sm:w-20 sm:h-20 bg-stone-100 rounded-lg mx-auto flex items-center justify-center text-stone-400 border border-stone-200"><i data-lucide="image-plus" class="w-5 h-5"></i></button>`}</td>
                     <td class="p-2"><input type="date" value="${r.date || ''}" onchange="updateRecordField('${r.id}','date',this.value)" class="w-32 border border-emerald-200 rounded p-1 text-xs"></td>
                     <td class="p-2"><input type="text" value="${escapeAttribute(r.person)}" onchange="updateRecordField('${r.id}','person',this.value)" class="w-28 border border-emerald-200 rounded p-1 text-sm"></td>
                     <td class="p-2"><input type="text" value="${escapeAttribute(r.product)}" onchange="updateRecordField('${r.id}','product',this.value)" class="w-36 border border-emerald-200 rounded p-1 text-sm"></td>
@@ -1119,4 +1149,3 @@
     </script>
 </body>
 </html>
-
