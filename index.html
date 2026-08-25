@@ -22,7 +22,6 @@
             
             <div class="flex items-center space-x-2 sm:space-x-3">
                 <span id="syncStatus" class="text-xs bg-amber-700/60 px-2 py-1 rounded text-amber-100 hidden sm:inline-block">未連結雲端</span>
-                <!-- 隱藏的 CSV 檔案選擇器 -->
                 <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)" class="hidden">
                 <button onclick="document.getElementById('csvFileInput').click()" class="flex items-center space-x-1 bg-amber-500 hover:bg-amber-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
                     <i data-lucide="file-up" class="w-4 h-4"></i>
@@ -42,7 +41,6 @@
 
     <!-- 主體內容區塊 -->
     <main class="max-w-7xl mx-auto px-4 mt-6">
-        
         <!-- 頁籤切換按鈕 -->
         <div class="flex border-b border-amber-200 mb-6 space-x-2 sm:space-x-4 overflow-x-auto pb-1">
             <button onclick="switchTab('tab-records')" id="btn-tab-records" class="tab-btn active px-4 py-2 font-medium rounded-t-lg transition flex items-center space-x-2 bg-amber-600 text-white">
@@ -72,7 +70,6 @@
                             <i data-lucide="plus-circle" class="w-5 h-5"></i>
                             <span>新增訂單紀錄</span>
                         </button>
-                        <!-- 批量刪除按鈕 -->
                         <button id="batchDeleteBtn" onclick="batchDeleteRecords()" class="hidden bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-1 shrink-0">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                             <span id="batchDeleteText">刪除選取 (0)</span>
@@ -121,7 +118,7 @@
                 </div>
             </div>
 
-            <!-- 資料表格 -->
+            <!-- 資料表格：標頭 14 欄 -->
             <div class="bg-white rounded-xl shadow border border-amber-200 overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
@@ -387,7 +384,7 @@
         </div>
     </div>
 
-    <!-- JavaScript 邏輯 -->
+    <!-- JavaScript 核心邏輯 -->
     <script>
         let records = JSON.parse(localStorage.getItem('rilakkuma_records')) || [];
         let stockData = JSON.parse(localStorage.getItem('rilakkuma_stock')) || {};
@@ -405,13 +402,12 @@
             
             if (apiUrl) {
                 fetchData();
-                // 雲端雙向同步：每 10 秒自動拉取一次最新雲端資料
                 setInterval(fetchData, 10000);
             }
             renderAll();
         });
 
-        // 雲端雙向同步抓取邏輯
+        // 雲端資料同步邏輯
         async function fetchData() {
             if (!apiUrl) return;
             const statusEl = document.getElementById('syncStatus');
@@ -424,13 +420,12 @@
                     records = data.records;
                 }
                 if (data.stock) {
-                    // 相容物件與數值格式
                     stockData = {};
                     Object.keys(data.stock).forEach(k => {
                         stockData[k] = (typeof data.stock[k] === 'object') ? data.stock[k].initQty : data.stock[k];
                     });
                 }
-                saveData(false); // 不重複發送 POST
+                saveData(false);
                 if (statusEl) {
                     statusEl.innerText = '已與雲端同步 (' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ')';
                     statusEl.classList.remove('hidden');
@@ -441,7 +436,7 @@
             }
         }
 
-        // CSV 大量匯入解析
+        // CSV 匯入解析
         function handleCSVImport(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -483,10 +478,10 @@
                 const pkgIdx = getIndex(['包材費', '包材']);
                 const shipIdx = getIndex(['運費', '郵寄運費']);
                 const orderedIdx = getIndex(['訂購狀態', '訂購']);
-                const locationIdx = getIndex(['商品位置', '位置']);
                 const giftIdx = getIndex(['小禮物', '贈品']);
-                const imgIdx = getIndex(['圖片', 'Image']);
+                const locationIdx = getIndex(['商品位置', '位置']);
                 const notesIdx = getIndex(['備註', 'Notes']);
+                const imgIdx = getIndex(['圖片', 'Image']);
                 
                 let importCount = 0;
                 const timestamp = new Date().getTime();
@@ -514,8 +509,8 @@
                         ordered: isOrdered,
                         gift: giftIdx >= 0 ? (row[giftIdx] || '無') : '無',
                         location: locationIdx >= 0 ? (row[locationIdx] || '代買中') : '代買中',
-                        imageUrl: imgIdx >= 0 ? row[imgIdx] : '',
-                        notes: notesIdx >= 0 ? row[notesIdx] : ''
+                        notes: notesIdx >= 0 ? row[notesIdx] : '',
+                        imageUrl: imgIdx >= 0 ? row[imgIdx] : ''
                     };
                     records.push(newRec);
                     importCount++;
@@ -563,6 +558,7 @@
             lucide.createIcons();
         }
 
+        // 重點修正：對齊 14 欄資料與渲染位置
         function renderRecords() {
             const tbody = document.getElementById('recordsTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -595,7 +591,17 @@
                 const totalPrice = unitPrice * qty;
                 const received = Number(r.received) || 0;
                 const unpaid = totalPrice - received;
-                const imgUrl = r.imageUrl || r.image || '';
+                
+                // 相容性處理：判斷圖片欄位 (防止 Base64 錯當成備註)
+                let imgUrl = r.imageUrl || r.image || '';
+                let notesContent = r.notes || '';
+                
+                // 防錯過濾：若 notes 誤裝了 base64 圖片，將其清洗還原
+                if (typeof notesContent === 'string' && notesContent.startsWith('data:image')) {
+                    if (!imgUrl) imgUrl = notesContent;
+                    notesContent = '';
+                }
+
                 const isOrdered = (r.ordered === true || r.ordered === '已訂購');
                 
                 totalSum += totalPrice;
@@ -604,6 +610,10 @@
                 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-amber-50/60 transition";
+                
+                // 14 欄精確對齊：
+                // 1.勾選框 | 2.圖片 | 3.日期 | 4.人名 | 5.商品名稱 | 6.訂購數量 | 7.售價/單價 
+                // 8.已收金額 | 9.未收金額 | 10.訂購狀態 | 11.小禮物 | 12.商品位置 | 13.備註 | 14.操作
                 tr.innerHTML = `
                     <td class="p-3 text-center">
                         <input type="checkbox" value="${r.id}" onchange="updateBatchDeleteBtn()" class="record-checkbox w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
@@ -650,7 +660,7 @@
                             <option value="已寄出" ${r.location === '已寄出' ? 'selected' : ''}>已寄出</option>
                         </select>
                     </td>
-                    <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${r.notes || ''}">${r.notes || '-'}</td>
+                    <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${notesContent}">${notesContent || '-'}</td>
                     <td class="p-3 text-center space-x-1 whitespace-nowrap">
                         <button onclick="editRecord('${r.id}')" class="text-amber-600 hover:text-amber-800 p-1"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                         <button onclick="deleteRecord('${r.id}')" class="text-rose-500 hover:text-rose-700 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
