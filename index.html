@@ -20,7 +20,13 @@
                 <h1 class="text-xl font-bold tracking-wide">拉拉熊的回家計畫</h1>
             </div>
             
-            <div class="flex items-center space-x-2 sm:space-x-4">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- 隱藏的 CSV 檔案選擇器 -->
+                <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)" class="hidden">
+                <button onclick="document.getElementById('csvFileInput').click()" class="flex items-center space-x-1 bg-amber-500 hover:bg-amber-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
+                    <i data-lucide="file-up" class="w-4 h-4"></i>
+                    <span>📥 匯入 Excel (CSV)</span>
+                </button>
                 <button onclick="openApiModal()" class="flex items-center space-x-1 bg-amber-700 hover:bg-amber-800 text-amber-100 text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
                     <i data-lucide="cloud-cog" class="w-4 h-4"></i>
                     <span>☁️ 雲端基地</span>
@@ -406,6 +412,99 @@
             renderAll();
         });
 
+        // Excel / CSV 大量匯入解析
+        function handleCSVImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const text = evt.target.result;
+                const lines = text.split(/\r\n|\n/);
+                if (lines.length <= 1) return alert('CSV 檔案內無有效資料！');
+
+                // 拆分 CSV 列的通用 Parser (可處理帶引號與逗號的欄位)
+                function parseCSVRow(rowStr) {
+                    const result = [];
+                    let insideQuote = false;
+                    let currentCell = '';
+                    for (let i = 0; i < rowStr.length; i++) {
+                        const char = rowStr[i];
+                        if (char === '"') {
+                            insideQuote = !insideQuote;
+                        } else if (char === ',' && !insideQuote) {
+                            result.push(currentCell.trim());
+                            currentCell = '';
+                        } else {
+                            currentCell += char;
+                        }
+                    }
+                    result.push(currentCell.trim());
+                    return result;
+                }
+
+                const headers = parseCSVRow(lines[0]);
+                const getIndex = (names) => names.reduce((acc, name) => acc !== -1 ? acc : headers.findIndex(h => h.includes(name)), -1);
+
+                const dateIdx = getIndex(['日期', 'Date']);
+                const personIdx = getIndex(['人名', '買家', 'Name']);
+                const productIdx = getIndex(['商品名稱', '商品', 'Product']);
+                const qtyIdx = getIndex(['訂購數量', '數量', 'Quantity']);
+                const priceIdx = getIndex(['售價', '單價', 'Price']);
+                const costIdx = getIndex(['成本', 'Cost']);
+                const receivedIdx = getIndex(['已收金額', '已收', 'Received']);
+                const pkgIdx = getIndex(['包材費', '包材']);
+                const shipIdx = getIndex(['運費', '郵寄運費']);
+                const orderedIdx = getIndex(['訂購狀態', '訂購']);
+                const locationIdx = getIndex(['商品位置', '位置']);
+                const giftIdx = getIndex(['小禮物', '贈品']);
+                const imgIdx = getIndex(['圖片', 'Image']);
+                const notesIdx = getIndex(['備註', 'Notes']);
+
+                let importCount = 0;
+                const timestamp = new Date().getTime();
+
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    const row = parseCSVRow(lines[i]);
+                    if (row.length === 0 || !row[productIdx >= 0 ? productIdx : 0]) continue;
+
+                    let rawDate = dateIdx >= 0 ? row[dateIdx] : '';
+                    if (rawDate) rawDate = rawDate.replace(/\//g, '-');
+
+                    const orderedVal = orderedIdx >= 0 ? row[orderedIdx] : '';
+                    const isOrdered = (orderedVal === '已訂購' || orderedVal === 'true' || orderedVal === '1');
+
+                    const newRec = {
+                        id: `${timestamp}_csv_${i}`,
+                        date: rawDate || new Date().toISOString().split('T')[0],
+                        person: personIdx >= 0 ? row[personIdx] : '買家',
+                        product: productIdx >= 0 ? row[productIdx] : '商品',
+                        quantity: qtyIdx >= 0 ? (Number(row[qtyIdx]) || 1) : 1,
+                        price: priceIdx >= 0 ? (Number(row[priceIdx]) || 0) : 0,
+                        cost: costIdx >= 0 ? (Number(row[costIdx]) || 0) : 0,
+                        received: receivedIdx >= 0 ? (Number(row[receivedIdx]) || 0) : 0,
+                        packagingCost: pkgIdx >= 0 ? (Number(row[pkgIdx]) || 0) : 0,
+                        shippingCost: shipIdx >= 0 ? (Number(row[shipIdx]) || 0) : 0,
+                        ordered: isOrdered,
+                        gift: giftIdx >= 0 ? (row[giftIdx] || '無') : '無',
+                        location: locationIdx >= 0 ? (row[locationIdx] || '代買中') : '代買中',
+                        imageUrl: imgIdx >= 0 ? row[imgIdx] : '',
+                        notes: notesIdx >= 0 ? row[notesIdx] : ''
+                    };
+
+                    records.push(newRec);
+                    importCount++;
+                    syncToCloud('save', newRec);
+                }
+
+                saveData();
+                alert(`成功匯入 ${importCount} 筆訂單紀錄！`);
+                e.target.value = ''; // 重置 input
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
         function calculateModalTotal() {
             const qty = Number(document.getElementById('inputQuantity').value) || 0;
             const price = Number(document.getElementById('inputPrice').value) || 0;
@@ -443,7 +542,6 @@
             lucide.createIcons();
         }
 
-        // 1. 渲染進出貨管制表格 (包含直覺下拉選單與即時修改)
         function renderRecords() {
             const tbody = document.getElementById('recordsTableBody');
             const search = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -513,7 +611,6 @@
                     </td>
                     <td class="p-3 text-emerald-600 font-medium">$${received}</td>
                     <td class="p-3 ${unpaid > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'}">$${unpaid}</td>
-                    <!-- 訂購狀態下拉選單 -->
                     <td class="p-3 text-center">
                         <select onchange="updateOrderedSelect('${r.id}', this.value)" 
                             class="border text-xs rounded font-medium px-2 py-1 outline-none focus:ring-2 focus:ring-amber-500 ${isOrdered ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-amber-50 text-amber-800 border-amber-300'}">
@@ -522,7 +619,6 @@
                         </select>
                     </td>
                     <td class="p-3 text-center text-xs text-slate-600">${r.gift || '無'}</td>
-                    <!-- 商品位置下拉選單 -->
                     <td class="p-3 text-center">
                         <select onchange="updateRecordField('${r.id}', 'location', this.value)" 
                             class="border text-xs rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-500 ${getLocationBadgeClass(r.location)}">
@@ -547,7 +643,6 @@
             document.getElementById('statUnpaidPrice').innerText = `$${unpaidSum}`;
         }
 
-        // 下拉選單更新訂購狀態
         function updateOrderedSelect(id, valStr) {
             const r = records.find(rec => String(rec.id) === String(id));
             if (!r) return;
@@ -566,7 +661,6 @@
             }
         }
 
-        // 批量全選與按鈕狀態
         function toggleSelectAll(master) {
             const checkboxes = document.querySelectorAll('.record-checkbox');
             checkboxes.forEach(cb => cb.checked = master.checked);
@@ -602,7 +696,6 @@
             }
         }
 
-        // 2. 渲染庫存與物流 Tab
         function renderInventory() {
             const list = document.getElementById('inventoryList');
             const progress = document.getElementById('shippingProgress');
@@ -673,7 +766,6 @@
             lucide.createIcons();
         }
 
-        // 3. 渲染成本與利潤 Tab (成本依數量自動計算)
         function renderProfit() {
             const tbody = document.getElementById('profitTableBody');
             tbody.innerHTML = '';
@@ -684,7 +776,7 @@
                 const totalPrice = unitPrice * qty;
                 
                 const unitCost = Number(r.cost) || 0;
-                const totalProdCost = unitCost * qty; // 成本隨數量倍增
+                const totalProdCost = unitCost * qty;
                 const pkgCost = Number(r.packagingCost) || 0;
                 const shipCost = Number(r.shippingCost) || 0;
                 
@@ -733,7 +825,6 @@
             });
         }
 
-        // 表格通用即時修改與同步
         function updateRecordField(id, field, value) {
             const r = records.find(rec => String(rec.id) === String(id));
             if (!r) return;
@@ -747,7 +838,6 @@
             syncToCloud('save', r);
         }
 
-        // 4. 渲染年月盈虧統計
         function updateAnalytics() {
             const yearSelect = document.getElementById('analyticsYearSelect');
             const years = [...new Set(records.map(r => (r.date || '').split('-')[0]))].filter(Boolean);
@@ -807,7 +897,6 @@
             });
         }
 
-        // Modal 操作
         function openFormModal(isEdit = false) {
             document.getElementById('modalTitle').innerText = isEdit ? '編輯訂單紀錄' : '新增訂單紀錄';
             document.getElementById('formModal').classList.remove('hidden');
@@ -913,7 +1002,6 @@
             }
         }
 
-        // 圖片處理
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if (file) {
@@ -953,7 +1041,6 @@
             document.getElementById('imagePreviewContainer').classList.add('hidden');
         }
 
-        // 庫存操作
         async function addStock(e) {
             e.preventDefault();
             const pName = document.getElementById('stockProductName').value.trim();
@@ -994,7 +1081,6 @@
             }
         }
 
-        // 雲端同步 logic
         async function syncToCloud(action, payloadData) {
             if (!apiUrl) return;
             try {
