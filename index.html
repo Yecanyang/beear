@@ -34,6 +34,70 @@
             .records-rwd-table .col-product textarea, .records-rwd-table .col-notes textarea { width: 100%; max-width: none; min-height: 5rem; }
             .records-rwd-table .col-actions { justify-content: flex-end; }
         }
+
+        /* 電腦版：每筆訂單以兩排完整卡片呈現，不需要左右捲動 */
+        @media (min-width: 768px) {
+            #recordsTopScroll { display: none !important; }
+            .records-shell { overflow: visible !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+            .records-rwd-table { display: block; width: 100%; min-width: 0 !important; table-layout: auto; }
+            .records-rwd-table colgroup, .records-rwd-table thead { display: none; }
+            .records-rwd-table tbody { display: grid; gap: 1rem; }
+            .records-rwd-table tr { position: relative; display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 0; overflow: hidden; border: 1px solid #a7f3d0; border-radius: 1rem; background: white; box-shadow: 0 4px 14px rgba(6, 78, 59, .07); }
+            .records-rwd-table td { display: flex; min-width: 0; min-height: 5.25rem; flex-direction: column; align-items: stretch; justify-content: center; gap: .4rem; padding: .75rem !important; border-right: 1px solid #ecfdf5; border-bottom: 1px solid #d1fae5; text-align: left !important; }
+            .records-rwd-table td::before { content: attr(data-label); color: #047857; font-size: .7rem; font-weight: 700; line-height: 1; }
+            .records-rwd-table td input, .records-rwd-table td select, .records-rwd-table td textarea { width: 100% !important; max-width: none !important; min-width: 0; }
+            .records-rwd-table td:nth-child(1) { grid-column: 1 / span 1; grid-row: 1; align-items: center; }
+            .records-rwd-table td:nth-child(2) { grid-column: 2 / span 2; grid-row: 1; }
+            .records-rwd-table td:nth-child(3) { grid-column: 4 / span 2; grid-row: 1; }
+            .records-rwd-table td:nth-child(4) { grid-column: 6 / span 2; grid-row: 1; }
+            .records-rwd-table td:nth-child(5) { grid-column: 8 / span 4; grid-row: 1; }
+            .records-rwd-table td:nth-child(6) { grid-column: 12 / span 1; grid-row: 1; }
+            .records-rwd-table td:nth-child(10) { grid-column: 13 / span 2; grid-row: 1; }
+            .records-rwd-table td:nth-child(7) { grid-column: 1 / span 2; grid-row: 2; }
+            .records-rwd-table td:nth-child(8) { grid-column: 3 / span 2; grid-row: 2; }
+            .records-rwd-table td:nth-child(9) { grid-column: 5 / span 2; grid-row: 2; }
+            .records-rwd-table td:nth-child(11) { grid-column: 7 / span 2; grid-row: 2; }
+            .records-rwd-table td:nth-child(12) { grid-column: 9 / span 2; grid-row: 2; }
+            .records-rwd-table td:nth-child(13) { grid-column: 11 / span 3; grid-row: 2; }
+            .records-rwd-table td:nth-child(14) { grid-column: 14 / span 1; grid-row: 2; align-items: center; }
+            .records-rwd-table td:nth-child(7), .records-rwd-table td:nth-child(8), .records-rwd-table td:nth-child(9), .records-rwd-table td:nth-child(11), .records-rwd-table td:nth-child(12), .records-rwd-table td:nth-child(13), .records-rwd-table td:nth-child(14) { border-bottom: 0; }
+            .records-rwd-table td:nth-child(2) img, .records-rwd-table td:nth-child(2) button { width: 5.5rem; height: 5.5rem; }
+            .records-rwd-table .col-product textarea, .records-rwd-table .col-notes textarea { min-height: 4.25rem; }
+            .records-rwd-table .col-actions { flex-direction: row; justify-content: center; gap: .5rem; }
+            .records-rwd-table .col-actions::before { display: none; }
+        }
+
+        /* 參考圖版面：電腦版單列完整表格，所有欄位同時顯示 */
+        @media (min-width: 768px) {
+            #recordsTopScroll { display: none !important; }
+            .records-shell { overflow: visible !important; background: white !important; border: 1px solid #a7f3d0 !important; border-radius: 1rem !important; box-shadow: 0 3px 12px rgba(6, 78, 59, .06) !important; }
+            .records-rwd-table { display: table !important; width: 100% !important; min-width: 0 !important; table-layout: fixed !important; font-size: clamp(.68rem, .76vw, .82rem); }
+            .records-rwd-table thead { display: table-header-group !important; }
+            .records-rwd-table tbody { display: table-row-group !important; padding: 0 !important; }
+            .records-rwd-table tr { display: table-row !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+            .records-rwd-table td { display: table-cell !important; min-width: 0 !important; min-height: 0 !important; padding: .5rem .35rem !important; border-right: 0 !important; border-bottom: 1px solid #ecfdf5 !important; vertical-align: middle !important; text-align: left !important; }
+            .records-rwd-table td::before { display: none !important; }
+            .records-rwd-table th { padding: .7rem .35rem !important; white-space: nowrap; }
+            .records-rwd-table td input, .records-rwd-table td select, .records-rwd-table td textarea { width: 100% !important; max-width: 100% !important; min-width: 0 !important; font-size: inherit !important; }
+            .records-rwd-table td textarea { min-height: 2.6rem !important; max-height: 5.25rem; padding: .35rem !important; }
+            .records-rwd-table td:nth-child(1), .records-rwd-table th:nth-child(1) { width: 2.5%; text-align: center !important; }
+            .records-rwd-table td:nth-child(2), .records-rwd-table th:nth-child(2) { width: 5%; text-align: center !important; }
+            .records-rwd-table td:nth-child(3), .records-rwd-table th:nth-child(3) { width: 7.5%; }
+            .records-rwd-table td:nth-child(4), .records-rwd-table th:nth-child(4) { width: 8%; }
+            .records-rwd-table td:nth-child(5), .records-rwd-table th:nth-child(5) { width: 14%; }
+            .records-rwd-table td:nth-child(6), .records-rwd-table th:nth-child(6) { width: 6%; text-align: center !important; }
+            .records-rwd-table td:nth-child(7), .records-rwd-table th:nth-child(7) { width: 9%; }
+            .records-rwd-table td:nth-child(8), .records-rwd-table th:nth-child(8) { width: 7%; }
+            .records-rwd-table td:nth-child(9), .records-rwd-table th:nth-child(9) { width: 7%; }
+            .records-rwd-table td:nth-child(10), .records-rwd-table th:nth-child(10) { width: 7%; text-align: center !important; }
+            .records-rwd-table td:nth-child(11), .records-rwd-table th:nth-child(11) { width: 6%; }
+            .records-rwd-table td:nth-child(12), .records-rwd-table th:nth-child(12) { width: 8%; }
+            .records-rwd-table td:nth-child(13), .records-rwd-table th:nth-child(13) { width: 7%; }
+            .records-rwd-table td:nth-child(14), .records-rwd-table th:nth-child(14) { width: 5%; text-align: center !important; }
+            .records-rwd-table td:nth-child(2) img, .records-rwd-table td:nth-child(2) button { width: 3.5rem !important; height: 3.5rem !important; }
+            .records-rwd-table .col-actions { white-space: nowrap; }
+            .records-rwd-table .col-actions button { padding: .2rem !important; }
+        }
     </style>
 </head>
 <body class="bg-stone-50 min-h-screen text-slate-800 pb-12">
@@ -55,7 +119,7 @@
     </header>
  
     <!-- 主體內容區塊 -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+    <main class="w-full max-w-[1920px] mx-auto px-2 sm:px-3 lg:px-4 mt-6 space-y-6">
         <!-- 原始版風格摘要看板 -->
         <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div class="dashboard-card bg-white rounded-xl border border-emerald-100 shadow-sm p-4"><div class="flex items-center justify-between"><div><p class="text-xs sm:text-sm text-stone-500">篩選後總售價</p><p id="statTotalPrice" class="text-xl sm:text-2xl font-bold text-emerald-900 mt-1">$0</p></div><div class="p-2.5 rounded-xl bg-emerald-100 text-emerald-700"><i data-lucide="badge-dollar-sign" class="w-6 h-6"></i></div></div></div>
@@ -133,23 +197,7 @@
                 <div id="recordsTopScrollInner" class="h-px"></div>
             </div>
             <div class="records-shell bg-white rounded-xl shadow-sm border border-emerald-100 overflow-x-auto">
-                <table class="records-rwd-table min-w-[1650px] w-full table-fixed text-left border-collapse text-sm">
-                    <colgroup>
-                        <col class="w-12">
-                        <col class="w-28">
-                        <col class="w-36">
-                        <col class="w-36">
-                        <col class="w-60">
-                        <col class="w-24">
-                        <col class="w-32">
-                        <col class="w-28">
-                        <col class="w-28">
-                        <col class="w-28">
-                        <col class="w-28">
-                        <col class="w-32">
-                        <col class="w-64">
-                        <col class="w-24">
-                    </colgroup>
+                <table class="records-rwd-table w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-emerald-100/70 text-emerald-900 border-b border-emerald-200">
                             <th class="p-3 text-center">
@@ -1253,3 +1301,4 @@
     </script>
 </body>
 </html>
+
