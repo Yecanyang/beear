@@ -10,38 +10,59 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { color-scheme: light; }
+        html { scroll-behavior: smooth; }
+        body { background: linear-gradient(180deg, #ecfdf5 0, #fafaf9 260px); }
+        .dashboard-card { transition: transform .18s ease, box-shadow .18s ease; }
+        .dashboard-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(6, 78, 59, .10); }
+        .records-shell { scrollbar-color: #6ee7b7 #ecfdf5; scrollbar-width: thin; }
+        @media (max-width: 767px) {
+            .records-shell { overflow: visible !important; }
+            .records-rwd-table { display: block; width: 100%; min-width: 0 !important; }
+            .records-rwd-table thead { display: none; }
+            .records-rwd-table tbody { display: grid; gap: 1rem; padding: .75rem; }
+            .records-rwd-table tr { display: block; width: 100%; overflow: hidden; border: 1px solid #a7f3d0; border-radius: 1rem; background: white; box-shadow: 0 4px 12px rgba(6, 78, 59, .07); }
+            .records-rwd-table td { display: flex; width: 100%; min-height: 2.75rem; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #ecfdf5; padding: .65rem .8rem !important; text-align: right; }
+            .records-rwd-table td:last-child { border-bottom: 0; }
+            .records-rwd-table td::before { content: attr(data-label); flex: 0 0 5.5rem; color: #065f46; font-size: .75rem; font-weight: 700; text-align: left; }
+            .records-rwd-table td[data-label="圖片"] { justify-content: center; padding-top: 1rem !important; padding-bottom: 1rem !important; }
+            .records-rwd-table td[data-label="圖片"]::before { display: none; }
+            .records-rwd-table td input, .records-rwd-table td select { max-width: 68%; }
+            .records-rwd-table .col-product, .records-rwd-table .col-notes { display: block; text-align: left; }
+            .records-rwd-table .col-product::before, .records-rwd-table .col-notes::before { display: block; margin-bottom: .45rem; }
+            .records-rwd-table .col-product textarea, .records-rwd-table .col-notes textarea { width: 100%; max-width: none; min-height: 5rem; }
+            .records-rwd-table .col-actions { justify-content: flex-end; }
+        }
+    </style>
 </head>
 <body class="bg-stone-50 min-h-screen text-slate-800 pb-12">
-    <!-- 頂部導航列 -->
-    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center space-x-2">
-                <i data-lucide="package-check" class="w-7 h-7"></i>
-                <h1 class="text-xl font-bold tracking-wide">拉拉熊的回家計畫</h1>
+    <!-- 原始版風格頂部區域：保留現有綠色主題與全部操作 -->
+    <header class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/15 p-2.5 rounded-xl"><i data-lucide="package-check" class="w-7 h-7"></i></div>
+                <div><h1 class="text-2xl font-bold tracking-wide">拉拉熊的回家計畫</h1><p class="text-emerald-100 text-sm mt-0.5">進出貨與帳務管理系統</p></div>
             </div>
-            
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <span id="syncStatus" class="text-xs bg-emerald-700/60 px-2 py-1 rounded text-emerald-100 hidden sm:inline-block">未連結雲端</span>
-                <!-- 隱藏的 CSV 檔案選擇器 -->
+            <div class="flex flex-wrap items-center gap-2">
+                <span id="syncStatus" class="text-xs bg-black/15 px-3 py-2 rounded-lg text-emerald-50">未連結雲端</span>
                 <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)" class="hidden">
-                <button onclick="document.getElementById('csvFileInput').click()" class="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
-                    <i data-lucide="file-up" class="w-4 h-4"></i>
-                    <span>📥 匯入 Excel (CSV)</span>
-                </button>
-                <button onclick="openApiModal()" class="flex items-center space-x-1 bg-emerald-700 hover:bg-emerald-800 text-emerald-100 text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
-                    <i data-lucide="cloud-cog" class="w-4 h-4"></i>
-                    <span>☁️ 雲端基地</span>
-                </button>
-                <button onclick="fetchData(true)" class="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                    <span>重新整理</span>
-                </button>
+                <button onclick="document.getElementById('csvFileInput').click()" class="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-xs sm:text-sm px-3 py-2 rounded-lg transition"><i data-lucide="file-up" class="w-4 h-4"></i><span>匯入 CSV</span></button>
+                <button onclick="openApiModal()" class="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-xs sm:text-sm px-3 py-2 rounded-lg transition"><i data-lucide="cloud-cog" class="w-4 h-4"></i><span>雲端基地</span></button>
+                <button onclick="fetchData(true)" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm px-3 py-2 rounded-lg transition shadow"><i data-lucide="refresh-cw" class="w-4 h-4"></i><span>重新整理</span></button>
             </div>
         </div>
     </header>
  
     <!-- 主體內容區塊 -->
-    <main class="max-w-7xl mx-auto px-4 mt-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+        <!-- 原始版風格摘要看板 -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="dashboard-card bg-white rounded-xl border border-emerald-100 shadow-sm p-4"><div class="flex items-center justify-between"><div><p class="text-xs sm:text-sm text-stone-500">篩選後總售價</p><p id="statTotalPrice" class="text-xl sm:text-2xl font-bold text-emerald-900 mt-1">$0</p></div><div class="p-2.5 rounded-xl bg-emerald-100 text-emerald-700"><i data-lucide="badge-dollar-sign" class="w-6 h-6"></i></div></div></div>
+            <div class="dashboard-card bg-white rounded-xl border border-emerald-100 shadow-sm p-4"><div class="flex items-center justify-between"><div><p class="text-xs sm:text-sm text-stone-500">已收金額</p><p id="statReceivedPrice" class="text-xl sm:text-2xl font-bold text-emerald-700 mt-1">$0</p></div><div class="p-2.5 rounded-xl bg-teal-100 text-teal-700"><i data-lucide="circle-check-big" class="w-6 h-6"></i></div></div></div>
+            <div class="dashboard-card bg-white rounded-xl border border-rose-100 shadow-sm p-4"><div class="flex items-center justify-between"><div><p class="text-xs sm:text-sm text-stone-500">未收金額</p><p id="statUnpaidPrice" class="text-xl sm:text-2xl font-bold text-rose-600 mt-1">$0</p></div><div class="p-2.5 rounded-xl bg-rose-100 text-rose-600"><i data-lucide="wallet-cards" class="w-6 h-6"></i></div></div></div>
+            <div class="dashboard-card bg-white rounded-xl border border-amber-100 shadow-sm p-4"><div class="flex items-center justify-between"><div><p class="text-xs sm:text-sm text-stone-500">待寄出數量</p><p id="statPendingShip" class="text-xl sm:text-2xl font-bold text-amber-700 mt-1">0</p></div><div class="p-2.5 rounded-xl bg-amber-100 text-amber-700"><i data-lucide="package-open" class="w-6 h-6"></i></div></div></div>
+        </section>
         
         <!-- 頁籤切換按鈕 -->
         <div class="flex border-b border-emerald-200 mb-6 space-x-2 sm:space-x-4 overflow-x-auto pb-1">
@@ -65,7 +86,7 @@
  
         <!-- 1. 進出貨管制 Tab -->
         <section id="tab-records" class="tab-content">
-            <div class="bg-white p-4 rounded-xl shadow border border-emerald-200 mb-4 space-y-3">
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-emerald-100 mb-4 space-y-4">
                 <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
                     <div class="flex items-center space-x-2">
                         <button onclick="openFormModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center justify-center space-x-2 shrink-0">
@@ -104,26 +125,13 @@
                     </div>
                 </div>
  
-                <!-- 金額統計看板 -->
-                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-emerald-100 text-center">
-                    <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
-                        <span class="text-xs text-emerald-800 block">篩選後總售價</span>
-                        <span id="statTotalPrice" class="font-bold text-emerald-900 text-sm sm:text-base">$0</span>
-                    </div>
-                    <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
-                        <span class="text-xs text-emerald-800 block">已收金額</span>
-                        <span id="statReceivedPrice" class="font-bold text-emerald-700 text-sm sm:text-base">$0</span>
-                    </div>
-                    <div class="bg-rose-50 p-2 rounded-lg border border-rose-200">
-                        <span class="text-xs text-rose-800 block">未收金額</span>
-                        <span id="statUnpaidPrice" class="font-bold text-rose-700 text-sm sm:text-base">$0</span>
                     </div>
                 </div>
             </div>
  
             <!-- 資料表格 -->
-            <div class="bg-white rounded-xl shadow border border-emerald-200 overflow-x-auto">
-                <table class="min-w-[1850px] w-full table-fixed text-left border-collapse text-sm">
+            <div class="records-shell bg-white rounded-xl shadow-sm border border-emerald-100 overflow-x-auto">
+                <table class="records-rwd-table min-w-[1650px] w-full table-fixed text-left border-collapse text-sm">
                     <colgroup>
                         <col class="w-12">
                         <col class="w-28">
@@ -740,25 +748,27 @@
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-emerald-50/60 transition align-middle';
                 tr.innerHTML = `
-                    <td class="p-2 text-center"><input type="checkbox" value="${r.id}" onchange="updateBatchDeleteBtn()" class="record-checkbox w-4 h-4 rounded border-emerald-300 text-emerald-600"></td>
-                    <td class="p-2 text-center">${imgUrl ? `<img src="${imgUrl}" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg mx-auto border border-emerald-200 shadow-sm cursor-pointer" onclick="openImageViewer(this.src)" title="點擊放大圖片">` : `<button onclick="editRecord('${r.id}')" class="w-16 h-16 sm:w-20 sm:h-20 bg-stone-100 rounded-lg mx-auto flex items-center justify-center text-stone-400 border border-stone-200"><i data-lucide="image-plus" class="w-5 h-5"></i></button>`}</td>
-                    <td class="p-2"><input type="date" value="${r.date || ''}" onchange="updateRecordField('${r.id}','date',this.value)" class="w-32 border border-emerald-200 rounded p-1 text-xs"></td>
-                    <td class="p-2"><input type="text" value="${escapeAttribute(r.person)}" onchange="updateRecordField('${r.id}','person',this.value)" class="w-full border border-emerald-200 rounded p-1.5 text-sm"></td>
-                    <td class="p-2"><textarea rows="2" onchange="updateRecordField('${r.id}','product',this.value)" class="w-full min-h-14 resize-y border border-emerald-200 rounded p-1.5 text-sm leading-5 whitespace-pre-wrap break-words">${escapeText(r.product)}</textarea></td>
-                    <td class="p-2 text-center"><input type="number" min="1" value="${qty}" onchange="updateRecordField('${r.id}','quantity',this.value)" class="w-16 text-center border border-emerald-300 rounded p-1"></td>
-                    <td class="p-2"><div class="font-bold text-emerald-800">總計 $${totalPrice}</div><input type="number" min="0" value="${unitPrice}" onchange="updateRecordField('${r.id}','price',this.value)" class="w-20 border border-emerald-300 rounded p-1 text-xs" title="單件售價"></td>
-                    <td class="p-2"><input type="number" min="0" value="${received}" onchange="updateRecordField('${r.id}','received',this.value)" class="w-20 border border-emerald-300 rounded p-1 text-sm text-emerald-700"></td>
-                    <td class="p-2 font-semibold ${unpaid > 0 ? 'text-rose-600' : 'text-stone-400'}">$${unpaid}</td>
-                    <td class="p-2 text-center"><select onchange="updateRecordField('${r.id}','ordered',this.value)" class="border text-xs rounded px-2 py-1 ${r.ordered ? 'bg-emerald-50 text-emerald-800' : 'bg-stone-50 text-stone-600'}"><option value="false" ${!r.ordered ? 'selected' : ''}>未訂購</option><option value="true" ${r.ordered ? 'selected' : ''}>已訂購</option></select></td>
-                    <td class="p-2"><input type="text" value="${escapeAttribute(r.gift || '無')}" onchange="updateRecordField('${r.id}','gift',this.value)" class="w-full border border-emerald-200 rounded p-1.5 text-xs"></td>
-                    <td class="p-2"><select onchange="updateRecordField('${r.id}','location',this.value)" class="border text-xs rounded px-2 py-1 ${getLocationBadgeClass(r.location)}"><option value="代買中" ${r.location === '代買中' ? 'selected' : ''}>代買中</option><option value="日本家中" ${r.location === '日本家中' ? 'selected' : ''}>日本家中</option><option value="國際物流中" ${r.location === '國際物流中' ? 'selected' : ''}>國際物流中</option><option value="台灣家中" ${r.location === '台灣家中' ? 'selected' : ''}>台灣家中</option><option value="已寄出" ${r.location === '已寄出' ? 'selected' : ''}>已寄出</option></select></td>
-                    <td class="p-2"><textarea rows="2" onchange="updateRecordField('${r.id}','notes',this.value)" class="w-full min-h-14 resize-y border border-emerald-200 rounded p-1.5 text-xs leading-5 whitespace-pre-wrap break-words">${escapeText(r.notes || '')}</textarea></td>
-                    <td class="p-2 text-center whitespace-nowrap"><button onclick="editRecord('${r.id}')" class="text-emerald-600 p-1" title="完整編輯與圖片"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteRecord('${r.id}')" class="text-rose-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>`;
+                    <td data-label="選取" class="p-2 text-center"><input type="checkbox" value="${r.id}" onchange="updateBatchDeleteBtn()" class="record-checkbox w-4 h-4 rounded border-emerald-300 text-emerald-600"></td>
+                    <td data-label="圖片" class="p-2 text-center">${imgUrl ? `<img src="${imgUrl}" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg mx-auto border border-emerald-200 shadow-sm cursor-pointer" onclick="openImageViewer(this.src)" title="點擊放大圖片">` : `<button onclick="editRecord('${r.id}')" class="w-16 h-16 sm:w-20 sm:h-20 bg-stone-100 rounded-lg mx-auto flex items-center justify-center text-stone-400 border border-stone-200"><i data-lucide="image-plus" class="w-5 h-5"></i></button>`}</td>
+                    <td data-label="日期" class="p-2"><input type="date" value="${r.date || ''}" onchange="updateRecordField('${r.id}','date',this.value)" class="w-32 border border-emerald-200 rounded p-1 text-xs"></td>
+                    <td data-label="人名" class="p-2"><input type="text" value="${escapeAttribute(r.person)}" onchange="updateRecordField('${r.id}','person',this.value)" class="w-full border border-emerald-200 rounded p-1.5 text-sm"></td>
+                    <td data-label="商品名稱" class="p-2 col-product"><textarea rows="2" onchange="updateRecordField('${r.id}','product',this.value)" class="w-full min-h-14 resize-y border border-emerald-200 rounded p-1.5 text-sm leading-5 whitespace-pre-wrap break-words">${escapeText(r.product)}</textarea></td>
+                    <td data-label="訂購數量" class="p-2 text-center"><input type="number" min="1" value="${qty}" onchange="updateRecordField('${r.id}','quantity',this.value)" class="w-16 text-center border border-emerald-300 rounded p-1"></td>
+                    <td data-label="售價 / 單價" class="p-2"><div class="font-bold text-emerald-800">總計 $${totalPrice}</div><input type="number" min="0" value="${unitPrice}" onchange="updateRecordField('${r.id}','price',this.value)" class="w-20 border border-emerald-300 rounded p-1 text-xs" title="單件售價"></td>
+                    <td data-label="已收金額" class="p-2"><input type="number" min="0" value="${received}" onchange="updateRecordField('${r.id}','received',this.value)" class="w-20 border border-emerald-300 rounded p-1 text-sm text-emerald-700"></td>
+                    <td data-label="未收金額" class="p-2 font-semibold ${unpaid > 0 ? 'text-rose-600' : 'text-stone-400'}">$${unpaid}</td>
+                    <td data-label="訂購狀態" class="p-2 text-center"><select onchange="updateRecordField('${r.id}','ordered',this.value)" class="border text-xs rounded px-2 py-1 ${r.ordered ? 'bg-emerald-50 text-emerald-800' : 'bg-stone-50 text-stone-600'}"><option value="false" ${!r.ordered ? 'selected' : ''}>未訂購</option><option value="true" ${r.ordered ? 'selected' : ''}>已訂購</option></select></td>
+                    <td data-label="小禮物" class="p-2"><input type="text" value="${escapeAttribute(r.gift || '無')}" onchange="updateRecordField('${r.id}','gift',this.value)" class="w-full border border-emerald-200 rounded p-1.5 text-xs"></td>
+                    <td data-label="商品位置" class="p-2"><select onchange="updateRecordField('${r.id}','location',this.value)" class="border text-xs rounded px-2 py-1 ${getLocationBadgeClass(r.location)}"><option value="代買中" ${r.location === '代買中' ? 'selected' : ''}>代買中</option><option value="日本家中" ${r.location === '日本家中' ? 'selected' : ''}>日本家中</option><option value="國際物流中" ${r.location === '國際物流中' ? 'selected' : ''}>國際物流中</option><option value="台灣家中" ${r.location === '台灣家中' ? 'selected' : ''}>台灣家中</option><option value="已寄出" ${r.location === '已寄出' ? 'selected' : ''}>已寄出</option></select></td>
+                    <td data-label="備註" class="p-2 col-notes"><textarea rows="2" onchange="updateRecordField('${r.id}','notes',this.value)" class="w-full min-h-14 resize-y border border-emerald-200 rounded p-1.5 text-xs leading-5 whitespace-pre-wrap break-words">${escapeText(r.notes || '')}</textarea></td>
+                    <td data-label="操作" class="p-2 text-center whitespace-nowrap col-actions"><button onclick="editRecord('${r.id}')" class="text-emerald-600 p-1" title="完整編輯與圖片"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteRecord('${r.id}')" class="text-rose-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             document.getElementById('statTotalPrice').innerText = `$${totalSum}`;
             document.getElementById('statReceivedPrice').innerText = `$${receivedSum}`;
             document.getElementById('statUnpaidPrice').innerText = `$${unpaidSum}`;
+            const pendingShipQty = records.filter(r => r.location !== '已寄出').reduce((sum, r) => sum + (Number(r.quantity) || 1), 0);
+            document.getElementById('statPendingShip').innerText = pendingShipQty;
             lucide.createIcons();
         }
  
@@ -1211,3 +1221,4 @@
     </script>
 </body>
 </html>
+
