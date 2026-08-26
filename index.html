@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -32,7 +32,7 @@
                     <i data-lucide="cloud-cog" class="w-4 h-4"></i>
                     <span>☁️ 雲端基地</span>
                 </button>
-                <button onclick="fetchData()" class="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
+                <button onclick="fetchData(true)" class="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow-sm">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     <span>重新整理</span>
                 </button>
@@ -401,6 +401,7 @@
         let apiUrl = localStorage.getItem('rilakkuma_api_url') || '';
         let profitChartInstance = null;
         let currentBase64Image = '';
+        let cloudSyncTimer = null;
  
  
         function normalizeRecord(record = {}) {
@@ -447,6 +448,13 @@
  
         stockData = normalizeStockData(stockData);
  
+ 
+ 
+        function startCloudSync() {
+            if (cloudSyncTimer) clearInterval(cloudSyncTimer);
+            fetchData(true);
+            cloudSyncTimer = setInterval(() => fetchData(false), 10000);
+        }
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
@@ -456,35 +464,64 @@
             document.getElementById('inputCost').addEventListener('input', calculateModalTotal);
             
             if (apiUrl) {
-                fetchData();
+                startCloudSync();
                 // 雲端雙向同步：每 10 秒自動拉取一次最新雲端資料
-                setInterval(fetchData, 10000);
             }
             renderAll();
         });
  
         // 雲端雙向同步抓取邏輯
-        async function fetchData() {
+        function buildDataSignature(recordList, stockItems) {
+            const normalizedStock = Object.keys(stockItems || {}).sort().reduce((result, key) => {
+                result[key] = stockItems[key];
+                return result;
+            }, {});
+            return JSON.stringify({ records: recordList || [], stock: normalizedStock });
+        }
+ 
+        function isUserEditing() {
+            const active = document.activeElement;
+            const isFormField = active && ['INPUT', 'SELECT', 'TEXTAREA'].includes(active.tagName);
+            const hasOpenModal = !document.getElementById('formModal').classList.contains('hidden') ||
+                !document.getElementById('apiModal').classList.contains('hidden') ||
+                !document.getElementById('imageViewerModal').classList.contains('hidden');
+            return isFormField || hasOpenModal;
+        }
+ 
+        // 安靜同步：資料相同不重畫；使用者編輯中也不打斷畫面。
+        async function fetchData(forceRefresh = false) {
             if (!apiUrl) return;
+            if (!forceRefresh && isUserEditing()) return;
+ 
             const statusEl = document.getElementById('syncStatus');
             try {
                 if (statusEl) statusEl.innerText = '同步中...';
-                const response = await fetch(apiUrl);
+                const response = await fetch(apiUrl, { cache: 'no-store' });
                 const data = await response.json();
-                
-                if (data.records && Array.isArray(data.records)) {
-                    records = data.records.map(normalizeRecord);
+                if (!response.ok || data.result === 'error') {
+                    throw new Error(data.message || `HTTP ${response.status}`);
                 }
-                if (data.stock) {
-                    stockData = normalizeStockData(data.stock);
+ 
+                const nextRecords = Array.isArray(data.records) ? data.records.map(normalizeRecord) : records;
+                const nextStock = data.stock ? normalizeStockData(data.stock) : stockData;
+                const hasChanges = buildDataSignature(records, stockData) !== buildDataSignature(nextRecords, nextStock);
+ 
+                if (hasChanges || forceRefresh) {
+                    const scrollX = window.scrollX;
+                    const scrollY = window.scrollY;
+                    records = nextRecords;
+                    stockData = nextStock;
+                    saveData(false);
+                    renderAll();
+                    requestAnimationFrame(() => window.scrollTo({ left: scrollX, top: scrollY, behavior: 'instant' }));
                 }
-                saveData(false); // 不重複發送 POST
+ 
                 if (statusEl) {
-                    statusEl.innerText = '已與雲端同步 (' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ')';
+                    statusEl.innerText = '已與雲端同步 (' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ')';
                     statusEl.classList.remove('hidden');
                 }
             } catch (err) {
-                console.error("無法從雲端讀取資料:", err);
+                console.error('無法從雲端讀取資料:', err);
                 if (statusEl) statusEl.innerText = '同步失敗';
             }
         }
@@ -856,7 +893,7 @@
             r.shipped = r.location === '已寄出';
             r.unpaid = Math.max(0, (Number(r.price) || 0) * (Number(r.quantity) || 1) - (Number(r.received) || 0));
             saveData();
-            syncToCloud('save', r).then(fetchData);
+            syncToCloud('save', r);
         }
  
         function updateAnalytics() {
@@ -1135,14 +1172,15 @@
             localStorage.setItem('rilakkuma_api_url', apiUrl);
             closeApiModal();
             if (apiUrl) {
-                fetchData();
-                setInterval(fetchData, 10000);
+                startCloudSync();
             }
         }
  
         function clearApiUrl() {
             apiUrl = '';
             localStorage.removeItem('rilakkuma_api_url');
+            if (cloudSyncTimer) clearInterval(cloudSyncTimer);
+            cloudSyncTimer = null;
             document.getElementById('apiUrlInput').value = '';
             closeApiModal();
         }
