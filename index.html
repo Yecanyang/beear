@@ -125,11 +125,13 @@
                     </div>
                 </div>
  
-                    </div>
-                </div>
             </div>
  
             <!-- 資料表格 -->
+            <!-- 上方同步橫向捲軸：不必滑到表格底部即可左右移動 -->
+            <div id="recordsTopScroll" class="hidden md:block sticky top-0 z-30 h-4 overflow-x-auto overflow-y-hidden bg-emerald-50 border border-emerald-200 rounded-t-lg shadow-sm">
+                <div id="recordsTopScrollInner" class="h-px"></div>
+            </div>
             <div class="records-shell bg-white rounded-xl shadow-sm border border-emerald-100 overflow-x-auto">
                 <table class="records-rwd-table min-w-[1650px] w-full table-fixed text-left border-collapse text-sm">
                     <colgroup>
@@ -492,6 +494,7 @@
                 // 雲端雙向同步：每 10 秒自動拉取一次最新雲端資料
             }
             renderAll();
+            setupRecordsHorizontalScroll();
         });
  
         // 雲端雙向同步抓取邏輯
@@ -665,6 +668,34 @@
             if (triggerRender) renderAll();
         }
  
+
+        function setupRecordsHorizontalScroll() {
+            const topScroll = document.getElementById('recordsTopScroll');
+            const topInner = document.getElementById('recordsTopScrollInner');
+            const tableScroll = document.querySelector('.records-shell');
+            const table = document.querySelector('.records-rwd-table');
+            if (!topScroll || !topInner || !tableScroll || !table) return;
+
+            const updateWidth = () => {
+                topInner.style.width = `${table.scrollWidth}px`;
+                topScroll.scrollLeft = tableScroll.scrollLeft;
+            };
+            let syncing = false;
+            topScroll.onscroll = () => {
+                if (syncing) return;
+                syncing = true;
+                tableScroll.scrollLeft = topScroll.scrollLeft;
+                syncing = false;
+            };
+            tableScroll.onscroll = () => {
+                if (syncing) return;
+                syncing = true;
+                topScroll.scrollLeft = tableScroll.scrollLeft;
+                syncing = false;
+            };
+            updateWidth();
+            window.addEventListener('resize', updateWidth, { passive: true });
+        }
         function renderAll() {
             renderRecords();
             renderInventory();
@@ -769,6 +800,7 @@
             document.getElementById('statUnpaidPrice').innerText = `$${unpaidSum}`;
             const pendingShipQty = records.filter(r => r.location !== '已寄出').reduce((sum, r) => sum + (Number(r.quantity) || 1), 0);
             document.getElementById('statPendingShip').innerText = pendingShipQty;
+            requestAnimationFrame(setupRecordsHorizontalScroll);
             lucide.createIcons();
         }
  
@@ -1221,4 +1253,3 @@
     </script>
 </body>
 </html>
-
